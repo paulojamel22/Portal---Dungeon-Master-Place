@@ -6,7 +6,7 @@ O **Portal DMPlace** é uma plataforma desenvolvida para centralizar a narrativa
 
 ---
 
-![Preview do Portal](<img width="1455" height="893" alt="image" src="https://github.com/user-attachments/assets/29550377-2718-4cd7-833a-6c2b6c0a147a" />)
+![Preview do Portal](./preview.png")
 
 
 ## 🛠️ Tecnologias Utilizadas
