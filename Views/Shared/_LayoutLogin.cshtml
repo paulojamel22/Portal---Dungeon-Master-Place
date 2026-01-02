@@ -1,0 +1,80 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Portal do GM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: radial-gradient(circle at center, #1e1e1e 0%, #0f0f0f 100%);
+            color: #f1f1f1;
+            font-family: "Segoe UI", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background-color: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+            .login-card h2 {
+                color: #ffc107;
+                text-align: center;
+                margin-bottom: 25px;
+            }
+
+        .form-control {
+            background-color: #2a2a2a;
+            border: none;
+            color: #f1f1f1;
+        }
+
+            .form-control:focus {
+                box-shadow: 0 0 5px #ffc107;
+                background-color: #2f2f2f;
+            }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+            color: #000;
+            font-weight: 600;
+        }
+
+            .btn-warning:hover {
+                background-color: #e0a800;
+            }
+
+        a.btn-outline-warning {
+            margin-top: 10px;
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+            a.btn-outline-warning:hover {
+                background-color: #ffc107;
+                color: #000;
+            }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        @RenderBody()
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

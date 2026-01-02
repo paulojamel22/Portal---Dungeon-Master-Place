@@ -1,0 +1,46 @@
+﻿@model PortalDMPlace.Models.Noticia
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<div class="container py-4">
+    <div class="card bg-dark text-light shadow-lg border border-warning">
+        @if (!string.IsNullOrEmpty(Model.ImagemUrl) && System.IO.File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", Model.ImagemUrl.TrimStart('/'))))
+        {
+            <img src="@Model.ImagemUrl" class="card-img-top" alt="@Model.Titulo" style="max-height: 400px; object-fit: cover;">
+        }
+        else
+        {
+            <img src="~/img/default.png" class="card-img-top" alt="Imagem da notícia" style="height:400px; object-fit:cover;">
+        }
+
+        <div class="card-body">
+            <h1 class="card-title text-warning mb-3">@Model.Titulo</h1>
+            <p class="text-muted mb-1">
+                <strong>@Model.Autor</strong> — @Model.DataPublicacao.ToString("dd/MM/yyyy HH:mm")
+            </p>
+            <p class="text-muted mb-3">
+                <span class="badge bg-warning text-dark">@Model.Categoria</span>
+                @if (Model.Campanha == 1)
+                {
+                    <span class="badge bg-primary">Ecos de Aetheria</span>
+                }
+                else if (Model.Campanha == 2)
+                {
+                    <span class="badge bg-danger">Desafio de Sangue</span>
+                }
+            </p>
+
+            <hr class="border-warning">
+            <div class="news-body bg-dark bg-opacity-50 p-3 rounded text-light">
+                @Html.Raw(Model.Conteudo)
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="Aetheria" asp-action="Index" class="btn btn-outline-warning">
+            <i class="bi bi-arrow-left"></i> Voltar às notícias
+        </a>
+    </div>
+</div>

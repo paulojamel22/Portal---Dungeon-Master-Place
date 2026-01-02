@@ -1,0 +1,20 @@
+﻿@model PortalDMPlace.Models.Campanha
+@{
+    ViewData["Title"] = "Deletar Campanha";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-5 text-center">
+    <h2 class="text-danger mb-4">⚠️ Confirmar Exclusão</h2>
+
+    <div class="alert alert-danger">
+        Tem certeza que deseja excluir a campanha <strong>@Model.Name</strong>?
+    </div>
+
+    <form asp-action="ConfirmarDeletarCampanha" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <button type="submit" class="btn btn-outline-danger px-4 me-2">Sim, Excluir</button>
+        <a asp-action="Campanhas" class="btn btn-secondary px-4">Cancelar</a>
+    </form>
+</div>

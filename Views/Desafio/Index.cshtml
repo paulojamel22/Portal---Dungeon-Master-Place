@@ -1,0 +1,113 @@
+﻿@model IEnumerable<PortalDMPlace.Models.Noticia>
+@{
+    var categorias = ViewBag.Categorias as List<string> ?? new List<string>();
+    ViewData["Title"] = "Desafio de Sangue";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4 text-danger text-center fw-bold">🩸 Desafio de Sangue</h1>
+    <p class="text-light text-center mb-5">
+        Glória, dor e sacrifício. Somente os mais fortes sobrevivem à arena.
+    </p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-dark text-center py-4 border border-danger">
+            Nenhuma notícia sangrenta foi registrada ainda...
+        </div>
+    }
+    else
+    {
+        <div class="mb-4 text-center">
+            <label class="text-light me-2 fw-bold">Filtrar por categoria:</label>
+            <select id="filtroCategoria" class="form-select d-inline-block w-auto bg-dark text-light border-warning">
+                <option value="">Todas</option>
+                @foreach (var cat in categorias)
+                {
+                    <option value="@cat">@cat</option>
+                }
+            </select>
+        </div>
+        <div class="row g-4">
+            @foreach (var n in Model)
+            {
+                @if (n.Campanha == 2)
+                {
+                    <div class="col-md-4" data-categoria="@n.Categoria">
+                        <div class="card bg-dark text-light border border-danger shadow-lg h-100">
+                            @if (!string.IsNullOrEmpty(n.ImagemUrl) && System.IO.File.Exists(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", n.ImagemUrl.TrimStart('/'))))
+                            {
+                                <img src="@n.ImagemUrl" class="card-img-top" alt="Imagem da notícia" style="height:200px; object-fit:cover;">
+                            }
+                            else
+                            {
+                                <img src="~/img/default.png" class="card-img-top" alt="Imagem da notícia" style="height:200px; object-fit:cover;">
+                            }
+
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title text-danger fw-bold">@n.Titulo</h5>
+
+                                <p class="card-text text-light small mb-2">
+                                    <strong>@n.Autor</strong> · @n.DataPublicacao.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+
+                                <p class="card-text flex-grow-1 text-secondary">
+                                    @n.GetResumo(160)
+                                </p>
+
+                                <div class="mt-auto">
+                                    <a asp-controller="Desafio"
+                                       asp-action="Detalhes"
+                                       asp-route-id="@n.Id"
+                                       class="btn btn-outline-danger w-100">
+                                        Ler mais
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>
+
+@if (ViewBag.TotalPages > 1)
+{
+    <nav aria-label="Paginação de notícias" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(ViewBag.Page == 1 ? "disabled" : "")">
+                <a class="page-link bg-dark text-warning border-warning"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.Page - 1)">Anterior</a>
+            </li>
+
+            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(ViewBag.Page == i ? "active" : "")">
+                    <a class="page-link bg-dark text-warning border-warning"
+                       asp-action="Index"
+                       asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(ViewBag.Page == ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link bg-dark text-warning border-warning"
+                   asp-action="Index"
+                   asp-route-page="@(ViewBag.Page + 1)">Próxima</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+
+<script>
+    document.getElementById("filtroCategoria").addEventListener("change", function() {
+        const valor = this.value.toLowerCase();
+        document.querySelectorAll("[data-categoria]").forEach(card => {
+            const categoria = card.getAttribute("data-categoria").toLowerCase();
+            card.style.display = (valor === "" || categoria === valor) ? "" : "none";
+        });
+    });
+</script>

@@ -1,0 +1,44 @@
+﻿@model PortalDMPlace.Models.Account
+@{
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container mt-5" style="max-width: 400px;">
+    <h2 class="text-warning mb-4 text-center">Registrar GM</h2>
+
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+    @if (ViewBag.Sucesso != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Sucesso</div>
+    }
+
+    <form asp-action="Registrar" method="post">
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">Nome</label>
+            <input asp-for="Name" class="form-control" required/>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label">Usuário</label>
+            <input asp-for="Username" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Senha</label>
+            <input asp-for="Password" type="password" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Campanha" class="form-label">Campanha</label>
+            <select asp-for="Campanha" class="form-select" required>
+                <option value="1">Ecos de Aetheria</option>
+                <option value="2">Desafio de Sangue</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-outline-warning w-100">Registrar</button>
+    </form>
+</div>

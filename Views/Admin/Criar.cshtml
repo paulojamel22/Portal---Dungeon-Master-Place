@@ -1,0 +1,102 @@
+﻿@model PortalDMPlace.Models.Noticia
+@{
+    ViewData["Title"] = "Nova Notícia";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4 text-warning text-center">📰 Publicar Nova Notícia</h2>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <form asp-controller="Admin" asp-action="Criar" method="post" enctype="multipart/form-data" class="bg-dark bg-opacity-50 p-4 rounded-3 border border-warning">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label asp-for="Titulo" class="form-label fw-bold text-warning"></label>
+                    <input asp-for="Titulo" class="form-control" placeholder="Digite o título da notícia" required />
+                    <span asp-validation-for="Titulo" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Conteudo" class="form-label fw-bold text-warning">Conteúdo (HTML permitido)</label>
+                    <textarea asp-for="Conteudo"
+                              class="form-control bg-dark text-light"
+                              rows="20"
+                              placeholder="Digite o conteúdo HTML da notícia (pode usar tags como <p>, <b>, <h3>, <img>...)" required></textarea>
+                    <span asp-validation-for="Conteudo" class="text-danger small"></span>
+                </div>
+
+                <div class="mt-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="previewHtml()">Visualizar HTML</button>
+                </div>
+
+                <!-- Pré-visualização -->
+                <div id="previewArea" class="border border-warning mt-3 p-3 rounded bg-dark text-light" style="display:none;">
+                    <h5 class="text-warning">Prévia:</h5>
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="Campanha" class="form-label fw-bold text-warning"></label>
+                    <select asp-for="Campanha" class="form-select" required>
+                        <option value="">Selecione...</option>
+                        <option value="1">Ecos de Aetheria</option>
+                        <option value="2">Desafio de Sangue</option>
+                    </select>
+                    <span asp-validation-for="Campanha" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Categoria" class="form-label fw-bold text-warning"></label>
+                    <select asp-for="Categoria" class="form-select" required>
+                        <option value="">Selecione uma categoria...</option>
+                        @foreach (var categoria in (List<string>)ViewBag.Categorias)
+                        {
+                            <option value="@categoria">@categoria</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Categoria" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Autor" class="form-label fw-bold text-warning"></label>
+                    <input asp-for="Autor" class="form-control" value="@ViewBag.Name" readonly />
+                    <span asp-validation-for="Autor" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ImagemUrl" class="form-label fw-bold text-warning">Imagem de Capa</label>
+                    <input asp-for="ImagemUrl" type="file" name="ImagemFile" class="form-control" accept="image/*" />
+                    <span asp-validation-for="ImagemUrl" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-warning">Data de Publicação</label>
+                    <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy HH:mm")" readonly />
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end mt-4">
+            <button type="submit" class="btn btn-outline-warning px-4 me-2">Publicar</button>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary px-4">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function previewHtml() {
+            const content = document.getElementById("Conteudo").value;
+            const preview = document.getElementById("previewContent");
+            preview.innerHTML = content;
+            document.getElementById("previewArea").style.display = "block";
+        }
+    </script>
+}

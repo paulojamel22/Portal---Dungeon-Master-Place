@@ -1,0 +1,44 @@
+﻿@model IEnumerable<PortalDMPlace.Models.Noticia>
+
+@{
+    ViewData["Title"] = "Painel do GM";
+    Layout = "_LayoutAdmin";
+}
+
+<h2 class="mb-4 text-warning">Painel do GM</h2>
+
+<a href="/Admin/Criar" class="btn btn-outline-warning mb-3">+ Nova Notícia</a>
+
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Campanha</th>
+            <th>Data</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var noticia in Model)
+        {
+            <tr>
+                <td>@noticia.Titulo</td>
+                @if (@noticia.Campanha == 1)
+                {
+                    <td>Ecos de Aetheria</td>
+                }
+
+                @if (@noticia.Campanha == 2)
+                {
+                    <td>Desafio de Sangue</td>
+                }
+                <td>@noticia.DataPublicacao.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <a asp-action="Detalhes" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-warning">Ler mais</a>
+                    <a asp-action="Editar" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-warning">Editar</a>
+                    <a asp-controller="Admin" asp-action="Excluir" asp-route-id="@noticia.Id"class="btn btn-sm btn-outline-danger">Excluir</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

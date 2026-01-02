@@ -1,0 +1,89 @@
+﻿@model IEnumerable<PortalDMPlace.Models.Campanha>
+@{
+    ViewData["Title"] = "Portal das Campanhas";
+}
+
+<style>
+    .portal-title {
+        font-family: 'Georgia', serif;
+        letter-spacing: 2px;
+        text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+    }
+
+    .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+        .card:hover {
+            transform: scale(1.03);
+            z-index: 10;
+        }
+
+    .border-warning-glow:hover {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    }
+
+    .border-danger-glow:hover {
+        box-shadow: 0 0 25px rgba(139, 0, 0, 0.9);
+    }
+
+    .card-img-top {
+        object-fit: cover;
+        height: 200px;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="text-warning portal-title display-4">
+            <i class="fas fa-galaxy"></i> PORTAIS INTERPLANARES
+        </h1>
+        <p class="text-light">
+            O Mestre Aguarda. Escolha o seu destino e prepare-se para rolar os dados!
+        </p>
+    </div>
+
+    <div class="row justify-content-center">
+        @foreach (var campanha in Model)
+        {
+            <div class="col-md-5 mb-4">
+                @if(campanha.NomeSimples == "Aetheria")
+                {
+                    <div class="card bg-dark border-warning shadow-lg border-warning-glow h-100">
+                        <img src="~/img/@(campanha.NomeSimples.ToLower().Replace(" ", ""))@(".png")" class="card-img-top" alt="@campanha.Name">
+                        <div class="card-body d-flex flex-column">
+                            <h3 class="card-title text-warning portal-title">
+                                <i class="fas fa-scroll"></i> @campanha.Name
+                            </h3>
+                            <p class="card-text text-light flex-grow-1">
+                                @campanha.Description
+                            </p>
+                           
+                            <a href="/@campanha.NomeSimples/Index" class="btn btn-warning mt-3">
+                                    Entrar no Portal
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card bg-dark border-danger shadow-lg border-danger-glow h-100">
+                        <img src="~/img/@(campanha.NomeSimples.ToLower().Replace(" ", ""))@(".png")" class="card-img-top" alt="@campanha.Name">
+                        <div class="card-body d-flex flex-column">
+                            <h3 class="card-title text-danger portal-title">
+                                <i class="fas fa-scroll"></i> @campanha.Name
+                            </h3>
+                            <p class="card-text text-light flex-grow-1">
+                                @campanha.Description
+                            </p>
+
+                            <a href="/@campanha.NomeSimples/Index" class="btn btn-danger mt-3">
+                                Entrar no Portal
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

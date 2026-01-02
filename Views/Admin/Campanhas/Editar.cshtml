@@ -1,0 +1,36 @@
+﻿@model PortalDMPlace.Models.Campanha
+@{
+    ViewData["Title"] = "Editar Campanha";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-4">
+    <h2 class="text-warning text-center mb-4">✏️ Editar Campanha</h2>
+
+    <form asp-action="EditarCampanha" method="post" class="bg-dark bg-opacity-50 p-4 rounded-3 border border-warning">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label text-warning fw-bold"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NomeSimples" class="form-label text-warning fw-bold"></label>
+            <input asp-for="NomeSimples" class="form-control" />
+            <span asp-validation-for="NomeSimples" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label text-warning fw-bold"></label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-outline-warning px-4 me-2">Salvar Alterações</button>
+            <a asp-action="Campanhas" class="btn btn-secondary px-4">Cancelar</a>
+        </div>
+    </form>
+</div>
