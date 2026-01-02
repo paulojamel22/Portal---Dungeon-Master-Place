@@ -5,7 +5,7 @@
 O **Portal DMPlace** é uma plataforma desenvolvida para centralizar a narrativa do grupo DMPlace. Ele atua como um repositório histórico onde as sessões se transformam em notícias e crônicas, permitindo que jogadores e mestres acompanhem a evolução dos seus mundos de forma organizada e imersiva.
 
 ---
-
+![Preview do Portal](./preview.png)
 
 ## 🛠️ Tecnologias Utilizadas
 
