@@ -19,9 +19,10 @@ O **Portal DMPlace** é uma plataforma desenvolvida para centralizar a narrativa
 * **Feed de Notícias:** Timeline atualizada com os anúncios e eventos das campanhas em aberto.
 * **Persistência Simples:** Configurado com SQLite para facilitar o deploy e a manutenção do banco de dados local.
 
-## 🎨 Identidade Visual & Design
-
-Seguindo a minha filosofia de design, o portal é otimizado para o uso de **tokens autorais** e artes em **formatos verticais/compridos**, trazendo a estética dos sistemas de RPG diretamente para a interface web. Cada notícia é mais que um texto; é um registro visual da nossa jornada.
+### 🎨 Interface e Experiência (UX)
+* **Design Imersivo:** Layout Dark Mode com tipografia medieval/fantasia.
+* **Cards Dinâmicos:** Interface organizada para destacar diferentes campanhas (Ecos de Aetheria, Desafio de Sangue).
+* **Foco em Narrativa:** Cada portal leva o jogador para crônicas específicas, mantendo a lore organizada.
 
 ---
 
