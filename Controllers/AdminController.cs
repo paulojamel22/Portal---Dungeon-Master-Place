@@ -242,7 +242,7 @@ namespace PortalDMPlace.Controllers
         {
             try
             {
-                string webhookUrl = "https://discord.com/api/webhooks/1428162593704509612/A-xYwin40QIYyaT-pEHc6Q8HaXjSIkPcvlCO4cPJdjSc5xLcJ-Vvawz4tcxfgc-LLJld";
+                string webhookUrl = "SEU WEBHOOK DISCORD AQUI";
 
                 using var httpClient = new HttpClient();
 
