@@ -1,89 +1,108 @@
 ﻿@model IEnumerable<PortalDMPlace.Models.Campanha>
 @{
-    ViewData["Title"] = "Portal das Campanhas";
+    ViewData["Title"] = "Portais do DM Place";
 }
 
 <style>
     .portal-title {
         font-family: 'Georgia', serif;
         letter-spacing: 2px;
-        text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+        text-transform: uppercase;
     }
 
-    .card {
-        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    .card-portal {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-width: 2px;
+        overflow: hidden;
     }
 
-        .card:hover {
-            transform: scale(1.03);
-            z-index: 10;
-        }
-
-    .border-warning-glow:hover {
-        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    .card-portal:hover {
+        transform: translateY(-10px) scale(1.02);
     }
 
-    .border-danger-glow:hover {
-        box-shadow: 0 0 25px rgba(139, 0, 0, 0.9);
+    /* Brilho Dourado para Aetheria ou Campanhas de Luz */
+    .glow-warning:hover {
+        box-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
+        border-color: #ffc107 !important;
     }
 
-    .card-img-top {
+    /* Brilho Sanguíneo para Desafio ou Campanhas Sombrias */
+    .glow-danger:hover {
+        box-shadow: 0 0 30px rgba(220, 53, 69, 0.4);
+        border-color: #dc3545 !important;
+    }
+
+    .img-portal {
+        height: 250px;
         object-fit: cover;
-        height: 200px;
+        filter: grayscale(30%) brightness(0.8);
+        transition: all 0.5s ease;
+    }
+
+    .card-portal:hover .img-portal {
+        filter: grayscale(0%) brightness(1);
+        transform: scale(1.1);
+    }
+
+    .bg-overlay-gradient {
+        background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9));
+        margin-top: -60px;
+        padding-top: 20px;
+        position: relative;
+        z-index: 2;
     }
 </style>
 
-<div class="container mt-5">
-    <div class="text-center mb-5">
-        <h1 class="text-warning portal-title display-4">
-            <i class="fas fa-galaxy"></i> PORTAIS INTERPLANARES
+<div class="container py-5">
+    <div class="text-center mb-5 mt-4">
+        <h1 class="text-warning portal-title display-3 fw-bold mb-2" style="text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);">
+            🌌 PORTAIS INTERPLANARES
         </h1>
-        <p class="text-light">
-            O Mestre Aguarda. Escolha o seu destino e prepare-se para rolar os dados!
+        <p class="text-muted fs-5">
+            O destino de mil mundos converge aqui. Escolha sua crônica, aventureiro.
         </p>
     </div>
 
-    <div class="row justify-content-center">
+    <div class="row justify-content-center g-5">
         @foreach (var campanha in Model)
         {
-            <div class="col-md-5 mb-4">
-                @if(campanha.NomeSimples == "Aetheria")
-                {
-                    <div class="card bg-dark border-warning shadow-lg border-warning-glow h-100">
-                        <img src="~/img/@(campanha.NomeSimples.ToLower().Replace(" ", ""))@(".png")" class="card-img-top" alt="@campanha.Name">
-                        <div class="card-body d-flex flex-column">
-                            <h3 class="card-title text-warning portal-title">
-                                <i class="fas fa-scroll"></i> @campanha.Name
-                            </h3>
-                            <p class="card-text text-light flex-grow-1">
-                                @campanha.Description
-                            </p>
-                           
-                            <a href="/@campanha.NomeSimples/Index" class="btn btn-warning mt-3">
-                                    Entrar no Portal
-                            </a>
-                        </div>
+            // Lógica dinâmica de cores baseada no NomeSimples ou ID
+            var isAetheria = campanha.NomeSimples.Contains("Aetheria", StringComparison.OrdinalIgnoreCase);
+            var colorClass = isAetheria ? "warning" : "danger";
+            var glowClass = isAetheria ? "glow-warning" : "glow-danger";
+            
+            <div class="col-md-5">
+                <div class="card card-portal bg-dark border-@colorClass @glowClass shadow-lg h-100 rounded-4">
+                    
+                    @* Imagem com efeito de zoom no hover *@
+                    <div class="overflow-hidden">
+                        <img src="~/img/@(campanha.NomeSimples.ToLower()).png" 
+                             class="card-img-top img-portal" 
+                             alt="@campanha.Name"
+                             onerror="this.src='/img/default_portal.png'">
                     </div>
-                }
-                else
-                {
-                    <div class="card bg-dark border-danger shadow-lg border-danger-glow h-100">
-                        <img src="~/img/@(campanha.NomeSimples.ToLower().Replace(" ", ""))@(".png")" class="card-img-top" alt="@campanha.Name">
-                        <div class="card-body d-flex flex-column">
-                            <h3 class="card-title text-danger portal-title">
-                                <i class="fas fa-scroll"></i> @campanha.Name
-                            </h3>
-                            <p class="card-text text-light flex-grow-1">
-                                @campanha.Description
-                            </p>
 
-                            <a href="/@campanha.NomeSimples/Index" class="btn btn-danger mt-3">
-                                Entrar no Portal
+                    <div class="card-body d-flex flex-column bg-overlay-gradient">
+                        <h2 class="card-title text-@colorClass portal-title h3 mb-3">
+                             @campanha.Name
+                        </h2>
+                        
+                        <p class="card-text text-light opacity-75 flex-grow-1" style="line-height: 1.6;">
+                            @campanha.Description
+                        </p>
+                       
+                        <div class="mt-4">
+                            <a href="/@campanha.NomeSimples" class="btn btn-@colorClass w-100 fw-bold py-3 rounded-pill shadow">
+                                <i class="bi bi-door-open-fill me-2"></i> Atravessar Portal
                             </a>
                         </div>
                     </div>
-                }
+                </div>
             </div>
         }
     </div>
 </div>
+
+<footer class="text-center mt-5 pt-5 opacity-50">
+    <p class="text-light small">O Portal DM Place é mantido pela vontade do Mestre. Role iniciativa.</p>
+</footer>

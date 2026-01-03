@@ -5,43 +5,88 @@
 }
 
 <div class="container py-4">
-    <div class="card bg-dark text-light shadow-lg border border-warning">
+    <div class="card bg-dark text-light shadow-lg border-0 overflow-hidden" style="border-radius: 15px;">
+        
         @if (!string.IsNullOrEmpty(Model.ImagemUrl))
         {
-            <img src="@Model.ImagemUrl" class="card-img-top" alt="@Model.Titulo" style="max-height: 400px; object-fit: cover;">
+            <div class="position-relative">
+                <img src="@Model.ImagemUrl" class="img-fluid w-100" alt="@Model.Titulo" style="max-height: 500px; object-fit: cover; border-bottom: 3px solid #ffc107;">
+                <div class="position-absolute bottom-0 start-0 p-3 bg-dark bg-opacity-75 rounded-top-end border-top border-end border-warning">
+                    <span class="badge bg-warning text-dark px-3 py-2">@Model.Categoria</span>
+                </div>
+            </div>
         }
 
-        <div class="card-body">
-            <h1 class="card-title text-warning mb-3">@Model.Titulo</h1>
-            <p class="text-muted mb-1">
-                <strong>@Model.Autor</strong> — @Model.DataPublicacao.ToString("dd/MM/yyyy HH:mm")
-            </p>
-            <p class="text-muted mb-3">
-                <span class="badge bg-warning text-dark">@Model.Categoria</span>
-                @if (Model.Campanha == 1)
-                {
-                    <span class="badge bg-primary">Ecos de Aetheria</span>
-                }
-                else if (Model.Campanha == 2)
-                {
-                    <span class="badge bg-danger">Desafio de Sangue</span>
-                }
-            </p>
+        <div class="card-body p-4 p-md-5">
+            <header class="mb-4">
+                <h1 class="display-5 fw-bold text-warning mb-3">@Model.Titulo</h1>
+                
+                <div class="d-flex flex-wrap gap-3 align-items-center text-muted small">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-circle me-2 text-warning"></i>
+                        <strong>@Model.Autor</strong>
+                    </div>
+                    <div class="d-flex align-items-center border-start ps-3 border-secondary">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        @Model.DataPublicacao.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                    <div class="d-flex align-items-center border-start ps-3 border-secondary">
+                        <i class="bi bi-bookmark-star me-2"></i>
+                        <span class="text-info fw-bold">@(Model.Campanha?.Name ?? "Crônica Geral")</span>
+                    </div>
+                </div>
+            </header>
 
-            <hr class="border-warning">
+            <hr class="border-secondary opacity-25 mb-5">
 
-            @* <div class="fs-5" style="white-space: pre-wrap;">
-                @Html.Raw(Model.Conteudo)
-            </div> *@
-            <div class="news-body bg-dark bg-opacity-50 p-3 rounded text-light">
+            <div class="news-content fs-5" style="line-height: 1.8;">
                 @Html.Raw(Model.Conteudo)
             </div>
         </div>
-    </div>
 
-    <div class="mt-4">
-        <a href="/Admin" class="btn btn-outline-warning">
-            <i class="bi bi-arrow-left"></i> Voltar às notícias
-        </a>
+        <div class="card-footer bg-black bg-opacity-25 border-top border-secondary p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a asp-action="Index" class="btn btn-outline-warning px-4">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Painel
+                </a>
+                
+                <div class="btn-group shadow">
+                    <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning fw-bold">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a asp-action="Excluir" asp-route-id="@Model.Id" class="btn btn-danger" 
+                       onclick="return confirm('Mestre, deseja realmente apagar esta crônica?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    /* Estilos para o conteúdo HTML injetado pelo mestre */
+    .news-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #444;
+    }
+    .news-content p {
+        margin-bottom: 1.5rem;
+    }
+    .news-content h3, .news-content h4 {
+        color: #ffc107;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .news-content blockquote {
+        border-left: 4px solid #ffc107;
+        padding-left: 20px;
+        font-style: italic;
+        color: #adb5bd;
+        background: rgba(255, 193, 7, 0.05);
+        padding: 15px 20px;
+    }
+</style>

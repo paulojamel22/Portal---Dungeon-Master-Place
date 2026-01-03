@@ -5,30 +5,50 @@
 }
 
 <div class="container py-4">
-    <h2 class="text-warning text-center mb-4">➕ Nova Campanha</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-warning text-center mb-4">⚒️ Forjar Nova Crônica</h2>
 
-    <form asp-action="CriarCampanha" method="post" class="bg-dark bg-opacity-50 p-4 rounded-3 border border-warning">
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label fw-bold text-warning"></label>
-            <input asp-for="Name" class="form-control" placeholder="Nome da campanha" />
-            <span asp-validation-for="Name" class="text-danger small"></span>
-        </div>
+            <form asp-action="CriarCampanha" method="post" class="bg-dark bg-opacity-75 p-4 rounded-4 border border-warning shadow-lg">
+                @Html.AntiForgeryToken()
 
-        <div class="mb-3">
-            <label asp-for="NomeSimples" class="form-label fw-bold text-warning"></label>
-            <input asp-for="NomeSimples" class="form-control" placeholder="Nome da campanha Simplificado." />
-            <span asp-validation-for="NomeSimples" class="text-danger small"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-bold text-warning">Nome da Campanha</label>
+                    <input asp-for="Name" class="form-control bg-dark text-white border-secondary" placeholder="Ex: Ecos de Aetheria" required />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
 
-        <div class="mb-3">
-            <label asp-for="Description" class="form-label fw-bold text-warning"></label>
-            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Breve descrição da campanha"></textarea>
-            <span asp-validation-for="Description" class="text-danger small"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="NomeSimples" class="form-label fw-bold text-warning">Nome Simples (Slug da URL)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-secondary text-white border-secondary">portal.dmplace.com.br/</span>
+                        <input asp-for="NomeSimples" class="form-control bg-dark text-white border-secondary" placeholder="aetheria" required />
+                    </div>
+                    <div class="form-text text-muted small">Evite espaços e caracteres especiais (ex: desafio-sangue).</div>
+                    <span asp-validation-for="NomeSimples" class="text-danger small"></span>
+                </div>
 
-        <div class="text-end">
-            <button type="submit" class="btn btn-outline-warning px-4 me-2">Salvar</button>
-            <a asp-action="Campanhas" class="btn btn-secondary px-4">Cancelar</a>
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label fw-bold text-warning">Descrição da Jornada</label>
+                    <textarea asp-for="Description" class="form-control bg-dark text-white border-secondary" rows="4" placeholder="Uma breve introdução para atrair os heróis..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <hr class="border-secondary opacity-50 my-4" />
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Campanhas" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                    <button type="submit" class="btn btn-warning px-5 fw-bold text-dark">
+                        📜 Registrar Campanha
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

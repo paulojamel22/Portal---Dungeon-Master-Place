@@ -485,3 +485,10 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Ignora todo o conteúdo da pasta de imagens de upload
+wwwroot/imagens/*
+
+# Caso queira garantir que a pasta exista no servidor mas vazia, 
+# podemos ignorar tudo exceto um arquivo .gitkeep
+!wwwroot/imagens/.gitkeep

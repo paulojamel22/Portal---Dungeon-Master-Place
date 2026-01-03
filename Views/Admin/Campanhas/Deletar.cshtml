@@ -4,17 +4,41 @@
     Layout = "_LayoutAdmin";
 }
 
-<div class="container py-5 text-center">
-    <h2 class="text-danger mb-4">⚠️ Confirmar Exclusão</h2>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark border-danger shadow-lg">
+                <div class="card-header border-danger text-center">
+                    <h2 class="text-danger mb-0">⚠️ Aviso Crítico</h2>
+                </div>
+                <div class="card-body text-center text-white p-5">
+                    <p class="fs-5">Você está prestes a apagar permanentemente os registros da crônica:</p>
+                    <h3 class="text-warning my-4">"@Model.Name"</h3>
+                    
+                    <div class="alert alert-warning border-warning bg-dark text-warning small">
+                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                        <strong>Atenção:</strong> Ao excluir esta campanha, as notícias e configurações (Webhooks) vinculadas a ela também poderão ficar órfãs ou ser removidas.
+                    </div>
 
-    <div class="alert alert-danger">
-        Tem certeza que deseja excluir a campanha <strong>@Model.Name</strong>?
+                    <form asp-action="ConfirmarDeletarCampanha" method="post" class="mt-4">
+                        @Html.AntiForgeryToken()
+                        
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="d-grid gap-2 d-md-block">
+                            <button type="submit" class="btn btn-danger px-4 py-2 fw-bold">
+                                <i class="bi bi-trash"></i> Sim, Apagar do Banco
+                            </button>
+                            <a asp-action="Campanhas" class="btn btn-outline-secondary px-4 py-2">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center small border-danger">
+                    Esta ação não pode ser desfeita nos portais de DMPlace.
+                </div>
+            </div>
+        </div>
     </div>
-
-    <form asp-action="ConfirmarDeletarCampanha" method="post">
-        <input type="hidden" asp-for="Id" />
-
-        <button type="submit" class="btn btn-outline-danger px-4 me-2">Sim, Excluir</button>
-        <a asp-action="Campanhas" class="btn btn-secondary px-4">Cancelar</a>
-    </form>
 </div>

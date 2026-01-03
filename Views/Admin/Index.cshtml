@@ -1,44 +1,77 @@
 ﻿@model IEnumerable<PortalDMPlace.Models.Noticia>
 
 @{
-    ViewData["Title"] = "Painel do GM";
+    ViewData["Title"] = "Painel do Mestre";
     Layout = "_LayoutAdmin";
 }
 
-<h2 class="mb-4 text-warning">Painel do GM</h2>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-warning mb-0">📜 Crônicas do Reino (Painel GM)</h2>
+        <a asp-action="Criar" class="btn btn-warning fw-bold text-dark shadow">
+            ✨ Forjar Nova Notícia
+        </a>
+    </div>
 
-<a href="/Admin/Criar" class="btn btn-outline-warning mb-3">+ Nova Notícia</a>
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Sucesso"]
+        </div>
+    }
 
-<table class="table table-dark table-striped">
-    <thead>
-        <tr>
-            <th>Título</th>
-            <th>Campanha</th>
-            <th>Data</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var noticia in Model)
-        {
-            <tr>
-                <td>@noticia.Titulo</td>
-                @if (@noticia.Campanha == 1)
+    <div class="table-responsive shadow-lg rounded-3">
+        <table class="table table-dark table-hover align-middle mb-0">
+            <thead class="table-dark border-bottom border-warning">
+                <tr class="text-warning">
+                    <th>Título da Crônica</th>
+                    <th>Campanha</th>
+                    <th>Data de Registro</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var noticia in Model)
                 {
-                    <td>Ecos de Aetheria</td>
+                    <tr>
+                        <td class="fw-bold">@noticia.Titulo</td>
+                        <td>
+                            @if (noticia.CampanhaId == 1)
+                            {
+                                <span class="badge rounded-pill bg-warning text-dark px-3">Ecos de Aetheria</span>
+                            }
+                            else if (noticia.CampanhaId == 2)
+                            {
+                                <span class="badge rounded-pill bg-danger px-3">Desafio de Sangue</span>
+                            }
+                            else
+                            {
+                                <span class="badge rounded-pill bg-secondary px-3">
+                                    @(noticia.Campanha?.Name ?? "Outra")
+                                </span>
+                            }
+                        </td>
+                        <td class="text-muted">
+                            <i class="bi bi-calendar3 me-1"></i> 
+                            @noticia.DataPublicacao.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group shadow-sm">
+                                <a asp-action="Detalhes" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-info" title="Visualizar">
+                                    👁️
+                                </a>
+                                <a asp-action="Editar" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-warning" title="Editar">
+                                    ✏️
+                                </a>
+                                <a asp-action="Excluir" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('Mestre, tem certeza que deseja apagar este registro dos anais do tempo?')" title="Excluir">
+                                    🗑️
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
                 }
-
-                @if (@noticia.Campanha == 2)
-                {
-                    <td>Desafio de Sangue</td>
-                }
-                <td>@noticia.DataPublicacao.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>
-                    <a asp-action="Detalhes" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-warning">Ler mais</a>
-                    <a asp-action="Editar" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-warning">Editar</a>
-                    <a asp-controller="Admin" asp-action="Excluir" asp-route-id="@noticia.Id"class="btn btn-sm btn-outline-danger">Excluir</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -37,3 +37,36 @@ a.nav-link:hover {
 footer p {
     margin-bottom: 0;
 }
+
+/* --- Ajustes de Contraste para o Painel DM --- */
+
+/* Textos informativos menores e labels */
+.text-muted, .form-text {
+    color: #b0b0b0 !important; /* Cinza claro legível */
+}
+
+.form-label, .list-group-item {
+    color: #f0f0f0 !important; /* Quase branco */
+}
+
+/* Tabelas e Células */
+.table {
+    color: #e0e0e0;
+}
+
+.table-dark thead th {
+    color: #ffc107; /* Títulos das colunas em amarelo para destaque */
+    border-bottom: 2px solid #444;
+}
+
+/* Input do Webhook e outros campos */
+input.form-control {
+    background-color: #1a1a1a !important;
+    border: 1px solid #555 !important;
+    color: #fff !important;
+}
+
+input.form-control:focus {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+}

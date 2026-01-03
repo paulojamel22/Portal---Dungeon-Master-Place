@@ -1,30 +1,51 @@
 ﻿@model PortalDMPlace.Models.Account
 @{
-    ViewData["Title"] = "Login do GM";
+    ViewData["Title"] = "Acesso ao Reino";
     Layout = "_LayoutLogin";
 }
 
-<div class="container mt-5" style="max-width: 400px;">
-    <h2 class="text-warning mb-4 text-center">Login do GM</h2>
+<div class="login-card">
+    <div class="text-center mb-4">
+        <i class="bi bi-dice-5 dm-logo-icon"></i>
+        <h2 class="text-warning fw-bold mb-1">Painel do GM</h2>
+        <p class="text-muted small">Identifique-se para gerenciar as crônicas</p>
+    </div>
 
     @if (ViewBag.Erro != null)
     {
-        <div class="alert alert-danger">@ViewBag.Erro</div>
+        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger text-danger small py-2 mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Erro
+        </div>
     }
 
     <form asp-action="Login" method="post">
-        <div class="mb-3">
-            <label asp-for="Username" class="form-label">Usuário</label>
-            <input asp-for="Username" class="form-control" placeholder="Digite o usuário" />
-        </div>
+        @Html.AntiForgeryToken()
 
         <div class="mb-3">
-            <label asp-for="Password" class="form-label">Senha</label>
-            <input asp-for="Password" type="password" class="form-control" placeholder="Digite a senha" />
+            <label asp-for="Username" class="form-label text-warning small fw-bold text-uppercase" style="letter-spacing: 1px;">Usuário</label>
+            <input asp-for="Username" class="form-control" placeholder="Seu nome de mestre" required autofocus />
         </div>
 
-        <button type="submit" class="btn btn-outline-warning w-100">Entrar</button>
-        <a class="btn btn-outline-warning w-100" asp-controller="Home" asp-action="Index">Voltar</a>
-        @* <a class="btn btn-outline-warning w-100" asp-controller="Admin" asp-action="Registrar">Registrar</a> *@
+        <div class="mb-4">
+            <label asp-for="Password" class="form-label text-warning small fw-bold text-uppercase" style="letter-spacing: 1px;">Senha</label>
+            <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" required />
+        </div>
+
+        <div class="d-grid gap-3">
+            <button type="submit" class="btn btn-warning fw-bold">
+                <i class="bi bi-shield-lock me-2"></i> Entrar no Portal
+            </button>
+            <a class="btn btn-outline-secondary btn-sm border-0" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-arrow-left me-1"></i> Voltar ao Site
+            </a>
+        </div>
     </form>
+    
+    <div class="text-center mt-5 pt-3 border-top border-secondary border-opacity-10">
+        <span class="text-muted smaller">© 2026 Portal DM Place</span>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

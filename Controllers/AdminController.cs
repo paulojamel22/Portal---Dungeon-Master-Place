@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using PortalDMPlace.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -9,9 +12,10 @@ using System.Text.RegularExpressions;
 
 namespace PortalDMPlace.Controllers
 {
-    public partial class AdminController(DataContext context) : Controller
+    public partial class AdminController(DataContext context, IHttpClientFactory httpClientFactory) : Controller
     {
         private readonly DataContext _context = context;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
         [GeneratedRegex(@"<\/?(div|article|span|cite)[^>]*>", RegexOptions.IgnoreCase)]
         private static partial Regex TagsIndesejadasRegex();
@@ -39,60 +43,45 @@ namespace PortalDMPlace.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Criar([BindRequired, Bind("Id,Titulo,Conteudo,Autor,ImagemUrl,Campanha,Categoria")] Noticia noticia, IFormFile? ImagemFile)
+        public async Task<IActionResult> Criar([BindRequired] Noticia noticia, IFormFile? ImagemFile)
         {
+            // Removemos validação de conteúdo se você usa editor Rich Text
             ModelState.Remove("Conteudo");
 
             if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Verifique os campos obrigatórios antes de continuar.";
+                ViewBag.Error = "Verifique os campos obrigatórios.";
                 return View(noticia);
             }
 
             try
             {
-                // Define a data atual
                 noticia.DataPublicacao = DateTime.Now;
 
-                // Se tiver imagem enviada
                 if (ImagemFile != null && ImagemFile.Length > 0)
                 {
-                    // Garante que a pasta existe
-                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens");
-                    if (!Directory.Exists(uploadsPath))
-                        Directory.CreateDirectory(uploadsPath);
-
-                    // Gera nome único pra imagem
                     var fileName = Guid.NewGuid() + Path.GetExtension(ImagemFile.FileName);
-                    var filePath = Path.Combine(uploadsPath, fileName);
-
-                    // Salva o arquivo
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/imagens", fileName);
+                    
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        ImagemFile.CopyTo(stream);
+                        await ImagemFile.CopyToAsync(stream);
                     }
-
-                    // Armazena o caminho relativo pra exibição no site
                     noticia.ImagemUrl = "/imagens/" + fileName;
                 }
 
-                // Garante autor padrão se não informado
-                if (string.IsNullOrWhiteSpace(noticia.Autor))
-                    noticia.Autor = "Mestre";
-
-                // Salva no banco
                 _context.Noticias.Add(noticia);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
-                // Após _context.SaveChanges();
-                EnviarNoticiaDiscord(noticia);
+                // 🚀 Chamada Assíncrona para o Discord
+                await EnviarNoticiaDiscord(noticia);
 
-                TempData["Sucesso"] = "Notícia publicada com sucesso!";
+                TempData["Sucesso"] = "Notícia publicada e enviada ao Discord!";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ViewBag.Error = "Erro ao salvar a notícia: " + ex.Message;
+                ViewBag.Error = "Erro: " + ex.Message;
                 return View(noticia);
             }
         }
@@ -141,10 +130,21 @@ namespace PortalDMPlace.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Editar(Noticia noticia, IFormFile? ImagemFile)
         {
+            // ISENÇÃO DE VALIDAÇÃO: Removemos o erro de ImagemUrl do ModelState
+            ModelState.Remove("ImagemUrl");
+            
+            // Se você não enviar a Campanha completa (objeto), remova também:
+            ModelState.Remove("Campanha");
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
+                Console.WriteLine("ModelState Errors: " + string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
                 return View(noticia);
+            }
+            else
+            {
+                Console.WriteLine("ModelState is valid.");
             }
 
             var noticiaExistente = _context.Noticias.Find(noticia.Id);
@@ -172,6 +172,11 @@ namespace PortalDMPlace.Controllers
 
                     noticiaExistente.ImagemUrl = "/imagens/" + fileName;
                 }
+                else
+                {
+                    // Mantém a imagem existente
+                    noticiaExistente.ImagemUrl = noticia.ImagemUrl;
+                }
 
                 _context.SaveChanges();
                 TempData["Sucesso"] = "Notícia atualizada com sucesso!";
@@ -180,6 +185,8 @@ namespace PortalDMPlace.Controllers
             catch (Exception ex)
             {
                 ViewBag.Error = "Erro ao atualizar: " + ex.Message;
+                TempData["Error"] = "Erro ao atualizar: " + ex.Message;
+                Console.WriteLine("Exception: " + ex.Message);
                 ViewBag.Categorias = new List<string> { "Avisos", "Atualizações", "Eventos", "Lore" };
                 return View(noticia);
             }
@@ -190,7 +197,7 @@ namespace PortalDMPlace.Controllers
         public IActionResult Login() => View();
 
         [HttpPost]
-        public IActionResult Login(string username, string password)
+        public async Task<IActionResult> Login(string username, string password)
         {
             var user = _context.Accounts.FirstOrDefault(u => u.Username == username);
 
@@ -200,11 +207,33 @@ namespace PortalDMPlace.Controllers
                 return View();
             }
 
-            HttpContext.Session.SetString("Logado", "true");
-            HttpContext.Session.SetInt32("Campanha", user.Campanha);
+            // 1. Criar as "Alegações" (Claims) do usuário
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, user.Name), // Este aqui é o que aparece no @User.Identity.Name
+                new(ClaimTypes.NameIdentifier, user.Username),
+                new("CampanhaId", user.CampanhaId.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // 2. Efetuar o Login Real no ASP.NET
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, 
+                new ClaimsPrincipal(claimsIdentity), 
+                new AuthenticationProperties { IsPersistent = true });
+
+            // Mantemos a sessão para compatibilidade com seus códigos anteriores
+            HttpContext.Session.SetInt32("Campanha", user.CampanhaId);
             HttpContext.Session.SetString("Usuario", user.Username);
 
             return RedirectToAction("Index", "Admin");
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
         }
 
         // --- Registro (opcional, só GM deve criar contas) ---
@@ -231,72 +260,50 @@ namespace PortalDMPlace.Controllers
             return RedirectToAction("Login");
         }
 
-        // --- Logout ---
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
-        }
-
-        private static async void EnviarNoticiaDiscord(Noticia noticia)
+        private async Task EnviarNoticiaDiscord(Noticia noticia)
         {
             try
             {
-                string webhookUrl = "SEU WEBHOOK DISCORD AQUI";
+                // 🔍 BUSCA DINÂMICA: Pega o webhook da campanha específica no banco
+                var settings = await _context.Settings
+                    .FirstOrDefaultAsync(s => s.CampanhaId == noticia.CampanhaId);
 
-                using var httpClient = new HttpClient();
+                if (settings == null || string.IsNullOrEmpty(settings.DiscordWebhookUrl))
+                    return; // Se não tem webhook configurado no servidor, ignora silenciosamente
 
-                // 1. Crie uma instância do conversor
+                var client = _httpClientFactory.CreateClient();
                 var converter = new Html2Markdown.Converter();
-
-                // 2. Converta o conteúdo HTML para Markdown
                 string conteudoMarkdown = converter.Convert(noticia.Conteudo);
 
-                // 3. Aplique o limite de caracteres do Discord (máx. 4096 para embeds)
-                // Usamos um limite seguro para o snippet e depois cortamos.
-                const int limiteDiscord = 4096;
-                string descricaoFormatada = conteudoMarkdown.Length > 250
-                    ? conteudoMarkdown[..Math.Min(conteudoMarkdown.Length, limiteDiscord)] // Corta para o limite do Discord
-                    : conteudoMarkdown;
-
-                // Limpar tags problemáticas
-                string conteudoLimpo = TagsIndesejadasRegex().Replace(descricaoFormatada, "");
-
-                // Também remove espaços extras e quebras de linha
-                conteudoLimpo = TagsIndesejadasRegex().Replace(conteudoLimpo, " ").Trim();
-
-                if (conteudoLimpo.Length > 250) // Se for maior que 500, adiciona "..."
-                {
-                    conteudoLimpo = string.Concat(conteudoLimpo.AsSpan(0, 500), "...");
-                }
+                // Limpeza de texto para o Embed
+                string conteudoLimpo = TagsIndesejadasRegex().Replace(conteudoMarkdown, " ").Trim();
+                if (conteudoLimpo.Length > 500) conteudoLimpo = string.Concat(conteudoLimpo.AsSpan(0, 500), "...");
 
                 var payload = new
                 {
                     username = "Aetheria News",
                     content = "@everyone",
-
                     embeds = new[]
                     {
                         new
                         {
-                                title = noticia.Titulo,
-                                description = conteudoLimpo,
-                                color = noticia.Campanha == 1 ? 0xFFD700 : 0x8B0000, // Aetheria = dourado / Desafio de Sangue = vermelho escuro
-                                url = $"https://portal.dmplace.com.br/Aetheria/Detalhes/{noticia.Id}",
-                                image = string.IsNullOrEmpty(noticia.ImagemUrl) ? null : new { url = $"https://portal.dmplace.com.br{noticia.ImagemUrl}" },
-                                footer = new { text = $"{noticia.Categoria} • Publicado por {noticia.Autor} em {noticia.DataPublicacao:dd/MM/yyyy HH:mm}" }
+                            title = noticia.Titulo,
+                            description = conteudoLimpo,
+                            color = noticia.CampanhaId == 1 ? 0xFFD700 : 0x8B0000, 
+                            url = $"https://portal.dmplace.com.br/Aetheria/Detalhes/{noticia.Id}",
+                            image = string.IsNullOrEmpty(noticia.ImagemUrl) ? null : new { url = "https://portal.dmplace.com.br/img/default.jpg" },
+                            footer = new { text = $"{noticia.Categoria} • Por {noticia.Autor}" }
                         }
                     }
                 };
 
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                await httpClient.PostAsync(webhookUrl, content);
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                await client.PostAsync(settings.DiscordWebhookUrl, content);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erro ao enviar notícia ao Discord: " + ex.Message);
+                // Logar o erro sem derrubar o site
+                Console.WriteLine($"[Discord Error] {ex.Message}");
             }
         }
 
@@ -380,6 +387,81 @@ namespace PortalDMPlace.Controllers
             _context.SaveChanges();
             TempData["Sucesso"] = "Campanha excluída!";
             return RedirectToAction(nameof(Campanhas));
+        }
+
+        //=====================================================================================
+        // Gerenciamento de Configurações (Settings) - NOVO
+        //=====================================================================================
+
+        [HttpGet]
+        public async Task<IActionResult> Configurar()
+        {
+            // Buscamos todas as campanhas e trazemos junto o objeto de Settings de cada uma
+            var campanhas = await _context.Campanhas
+                .Include(c => c.Settings)
+                .ToListAsync();
+
+            return View(campanhas);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Configurar(Settings config)
+        {
+            if (config.Id == 0) _context.Settings.Add(config);
+            else _context.Settings.Update(config);
+
+            await _context.SaveChangesAsync();
+            TempData["Sucesso"] = "Configurações salvas!";
+            return RedirectToAction(nameof(Campanhas));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SalvarWebhook(int id, string webhookUrl)
+        {
+            // Procura se já existe uma configuração para esta campanha
+            var config = await _context.Settings.FirstOrDefaultAsync(s => s.CampanhaId == id);
+
+            if (config == null)
+            {
+                // Se não existir, cria uma nova
+                config = new Settings 
+                { 
+                    CampanhaId = id, 
+                    DiscordWebhookUrl = webhookUrl 
+                };
+                _context.Settings.Add(config);
+            }
+            else
+            {
+                // Se já existir, apenas atualiza a URL
+                config.DiscordWebhookUrl = webhookUrl;
+                _context.Settings.Update(config);
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Webhook da campanha atualizado com sucesso!";
+            return RedirectToAction(nameof(Configurar));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TestarWebhook(int id)
+        {
+            var config = await _context.Settings.FirstOrDefaultAsync(s => s.CampanhaId == id);
+            
+            if (config == null || string.IsNullOrEmpty(config.DiscordWebhookUrl))
+            {
+                return Json(new { success = false, message = "Webhook não configurado!" });
+            }
+
+            using var client = new HttpClient();
+            var payload = new { content = "🔔 **Teste de Conexão:** O Portal DM Place está conectado com sucesso ao seu reino!" };
+            
+            var response = await client.PostAsJsonAsync(config.DiscordWebhookUrl, payload);
+
+            if (response.IsSuccessStatusCode)
+                return Json(new { success = true, message = "Sinal enviado ao Discord!" });
+            
+            return Json(new { success = false, message = "Erro ao enviar sinal. Verifique a URL." });
         }
     }
 }

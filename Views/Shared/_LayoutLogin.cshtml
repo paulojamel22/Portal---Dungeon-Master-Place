@@ -7,74 +7,140 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Portal do GM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <title>@ViewData["Title"] - Acesso Restrito ao Mestre</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
+        :root {
+            --dm-gold: #ffc107;
+            --dm-dark-bg: #0a0a0a;
+            --dm-card-bg: #141414;
+        }
+
         body {
-            background: radial-gradient(circle at center, #1e1e1e 0%, #0f0f0f 100%);
+            /* Fundo com vinheta para focar no centro */
+            background: radial-gradient(circle, #1a1a1a 0%, var(--dm-dark-bg) 100%);
             color: #f1f1f1;
-            font-family: "Segoe UI", sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            overflow: hidden;
+        }
+
+        /* Container de Login com Aura */
+        .login-card-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
         }
 
         .login-card {
-            background-color: #1c1c1c;
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 0 15px rgba(255, 193, 7, 0.2);
-            width: 100%;
-            max-width: 400px;
+            background-color: var(--dm-card-bg);
+            border: 1px solid rgba(255, 193, 7, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 
+                        0 0 20px rgba(255, 193, 7, 0.05);
+            backdrop-filter: blur(5px);
         }
 
-            .login-card h2 {
-                color: #ffc107;
-                text-align: center;
-                margin-bottom: 25px;
-            }
-
+        /* Estilização Global de Inputs para o Login */
         .form-control {
-            background-color: #2a2a2a;
-            border: none;
-            color: #f1f1f1;
+            background-color: #0f0f0f !important;
+            border: 1px solid #333 !important;
+            color: #fff !important;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
         }
 
-            .form-control:focus {
-                box-shadow: 0 0 5px #ffc107;
-                background-color: #2f2f2f;
-            }
+        .form-control:focus {
+            border-color: var(--dm-gold) !important;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.3) !important;
+            background-color: #161616 !important;
+        }
 
         .btn-warning {
-            background-color: #ffc107;
+            background-color: var(--dm-gold);
             border: none;
             color: #000;
-            font-weight: 600;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
         }
 
-            .btn-warning:hover {
-                background-color: #e0a800;
-            }
-
-        a.btn-outline-warning {
-            margin-top: 10px;
-            border-color: #ffc107;
-            color: #ffc107;
+        .btn-warning:hover {
+            background-color: #eab000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
         }
 
-            a.btn-outline-warning:hover {
-                background-color: #ffc107;
-                color: #000;
-            }
+        /* Animação de entrada */
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Detalhe Decorativo */
+        .dm-logo-icon {
+            font-size: 3rem;
+            color: var(--dm-gold);
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+        }
+
+        /* Melhora a legibilidade do texto muted e rodapé */
+        .text-muted {
+            color: #aaaaaa !important; /* Cinza claro nítido */
+        }
+
+        .smaller {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        /* Ajuste para o botão "Voltar ao Site" não sumir no escuro */
+        .btn-outline-secondary {
+            border-color: #444 !important;
+            color: #bbb !important;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #333 !important;
+            color: #fff !important;
+        }
+
+        /* Correção para o ícone de escudo no rodapé */
+        .bi-shield-check {
+            color: var(--dm-gold);
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
-    <div class="login-card">
+
+    <div class="login-card-container">
         @RenderBody()
+        
+        <div class="text-center mt-4">
+            <p class="text-muted small">
+                <i class="bi bi-shield-check"></i> Conexão Segura - Servidor Ampere
+            </p>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
