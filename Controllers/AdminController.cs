@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using PortalDMPlace.Functions;
 
 namespace PortalDMPlace.Controllers
 {
@@ -16,6 +16,8 @@ namespace PortalDMPlace.Controllers
     {
         private readonly DataContext _context = context;
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+
+        Functions.Functions Functions => new(_context);
 
         [GeneratedRegex(@"<\/?(div|article|span|cite)[^>]*>", RegexOptions.IgnoreCase)]
         private static partial Regex TagsIndesejadasRegex();
@@ -262,6 +264,8 @@ namespace PortalDMPlace.Controllers
 
         private async Task EnviarNoticiaDiscord(Noticia noticia)
         {
+            string campanhaNome = Functions.GetCampaignNameById(noticia.CampanhaId);
+
             try
             {
                 var settings = await _context.Settings
@@ -292,7 +296,7 @@ namespace PortalDMPlace.Controllers
                         new
                         {
                             title = "📜 " + noticia.Titulo,
-                            description = conteudoLimpo + $"\n\n[Leia a crônica completa aqui](https://portal.dmplace.com.br/Aetheria/Detalhes/{noticia.Id})",
+                            description = conteudoLimpo + $"\n\n[Leia a crônica completa aqui](https://portal.dmplace.com.br/{campanhaNome}/Detalhes/{noticia.Id})",
                             color = noticia.CampanhaId == 1 ? 16766720 : 9109504, // Decimal: Ouro para Campanha 1, Vermelho Escuro para as demais
                             image = new { url = urlImagemFinal },
                             footer = new { text = $"🏷️ {noticia.Categoria} • ✍️ Por {noticia.Autor} • {DateTime.Now:dd/MM HH:mm}" }
