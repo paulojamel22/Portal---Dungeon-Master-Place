@@ -264,20 +264,24 @@ namespace PortalDMPlace.Controllers
         {
             try
             {
-                // 🔍 BUSCA DINÂMICA: Pega o webhook da campanha específica no banco
                 var settings = await _context.Settings
                     .FirstOrDefaultAsync(s => s.CampanhaId == noticia.CampanhaId);
 
                 if (settings == null || string.IsNullOrEmpty(settings.DiscordWebhookUrl))
-                    return; // Se não tem webhook configurado no servidor, ignora silenciosamente
+                    return;
 
                 var client = _httpClientFactory.CreateClient();
                 var converter = new Html2Markdown.Converter();
                 string conteudoMarkdown = converter.Convert(noticia.Conteudo);
 
-                // Limpeza de texto para o Embed
                 string conteudoLimpo = TagsIndesejadasRegex().Replace(conteudoMarkdown, " ").Trim();
                 if (conteudoLimpo.Length > 500) conteudoLimpo = string.Concat(conteudoLimpo.AsSpan(0, 500), "...");
+
+                // Monta a URL da imagem dinamicamente
+                // Se a notícia tiver imagem, usa ela. Se não, usa a padrão.
+                string urlImagemFinal = string.IsNullOrEmpty(noticia.ImagemUrl) 
+                    ? "https://portal.dmplace.com.br/img/default.jpg" 
+                    : $"https://portal.dmplace.com.br{noticia.ImagemUrl}";
 
                 var payload = new
                 {
@@ -287,22 +291,26 @@ namespace PortalDMPlace.Controllers
                     {
                         new
                         {
-                            title = noticia.Titulo,
-                            description = conteudoLimpo,
-                            color = noticia.CampanhaId == 1 ? 0xFFD700 : 0x8B0000, 
-                            url = $"https://portal.dmplace.com.br/Aetheria/Detalhes/{noticia.Id}",
-                            image = string.IsNullOrEmpty(noticia.ImagemUrl) ? null : new { url = "https://portal.dmplace.com.br/img/default.jpg" },
-                            footer = new { text = $"{noticia.Categoria} • Por {noticia.Autor}" }
+                            title = "📜 " + noticia.Titulo,
+                            description = conteudoLimpo + $"\n\n[Leia a crônica completa aqui](https://portal.dmplace.com.br/Aetheria/Detalhes/{noticia.Id})",
+                            color = noticia.CampanhaId == 1 ? 16766720 : 9109504, // Decimal: Ouro para Campanha 1, Vermelho Escuro para as demais
+                            image = new { url = urlImagemFinal },
+                            footer = new { text = $"🏷️ {noticia.Categoria} • ✍️ Por {noticia.Autor} • {DateTime.Now:dd/MM HH:mm}" }
                         }
                     }
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                await client.PostAsync(settings.DiscordWebhookUrl, content);
+                var response = await client.PostAsync(settings.DiscordWebhookUrl, content);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"[Discord API Error] {response.StatusCode}: {errorDetails}");
+                }
             }
             catch (Exception ex)
             {
-                // Logar o erro sem derrubar o site
                 Console.WriteLine($"[Discord Error] {ex.Message}");
             }
         }
