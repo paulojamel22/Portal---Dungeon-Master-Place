@@ -273,9 +273,7 @@ ServiceFabricBackup/
 *.ndf
 
 # SQLite database files
-*.db
-*.db-shm
-*.db-wal
+database.db
 
 # Business Intelligence projects
 *.rdl.data
