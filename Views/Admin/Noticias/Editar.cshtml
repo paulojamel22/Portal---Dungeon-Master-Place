@@ -20,7 +20,7 @@
         </div>
     }
 
-    <form asp-controller="Admin" asp-action="Editar" method="post" enctype="multipart/form-data" class="bg-dark bg-opacity-75 p-4 rounded-4 border border-warning shadow-lg">
+    <form asp-controller="Noticia" asp-action="Editar" method="post" enctype="multipart/form-data" class="bg-dark bg-opacity-75 p-4 rounded-4 border border-warning shadow-lg">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="ImagemUrl" /> <div class="row">

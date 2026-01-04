@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PortalDMPlace.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using PortalDMPlace.Functions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,9 +13,10 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Admin/Login"; // Rota de login
+        options.LoginPath = "/Admin/Login"; // Onde o site manda se não estiver logado
         options.AccessDeniedPath = "/Admin/Login";
-        options.ExpireTimeSpan = TimeSpan.FromDays(7); // Para você não ter que logar todo dia
+        options.LogoutPath = "/Admin/Logout";
+        options.Cookie.Name = "DMPlaceAuth"; // Nome do cookie no navegador
     });
 
 // 3. Configuração de Sessão (Importante para o Admin)
@@ -29,6 +31,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<HelpersFunctions>();
 
 var app = builder.Build();
 
@@ -49,8 +53,16 @@ app.UseSession(); // Sessão deve vir antes da Autenticação/Autorização
 app.UseAuthentication(); // Habilita o reconhecimento de quem está logado
 app.UseAuthorization();
 
+
+// 1. Rota Padrão (HomeController)
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// 2. Rota Dinâmica para Campanhas (CampanhaController)
+app.MapControllerRoute(
+    name: "campanha",
+    pattern: "C/{slug}/{action=Index}/{id?}",
+    defaults: new { controller = "Campanha" });
 
 app.Run();

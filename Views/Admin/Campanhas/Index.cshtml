@@ -6,56 +6,76 @@
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-warning mb-0">🎯 Gerenciar Campanhas</h2>
-        <a asp-action="CriarCampanha" class="btn btn-outline-warning">
-            ➕ Nova Campanha
+        <div>
+            <h2 class="text-warning mb-0"><i class="bi bi-map-fill me-2"></i> Gerenciar Mundos</h2>
+            <p class="text-muted small">Controle a estrutura e a identidade visual de suas jornadas.</p>
+        </div>
+        <a asp-action="Criar" class="btn btn-warning fw-bold text-dark">
+            <i class="bi bi-plus-lg me-1"></i> NOVA CAMPANHA
         </a>
     </div>
 
     @if (TempData["Sucesso"] != null)
     {
-        <div class="alert alert-success border-0 shadow-sm">@TempData["Sucesso"]</div>
+        <div class="alert alert-success border-0 shadow-sm mb-4">
+            <i class="bi bi-check-all me-2"></i> @TempData["Sucesso"]
+        </div>
     }
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info text-center border-info">
-            <i class="bi bi-info-circle me-2"></i> Nenhuma crônica cadastrada nos portais de Aetheria.
+        <div class="card bg-dark border-secondary p-5 text-center">
+            <i class="bi bi-journal-x display-1 text-secondary mb-3"></i>
+            <h4 class="text-white-50">Nenhum mundo foi forjado ainda.</h4>
+            <p class="text-muted">Comece criando sua primeira campanha para dar vida às suas crônicas.</p>
         </div>
     }
     else
     {
-        <div class="table-responsive shadow">
-            <table class="table table-dark table-hover align-middle border border-warning">
-                <thead class="table-warning text-dark">
+        <div class="table-responsive shadow-lg rounded-3">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead class="bg-black text-warning border-bottom border-warning">
                     <tr>
-                        <th style="width: 50px">ID</th>
-                        <th>Nome da Campanha</th>
-                        <th>Slug (URL)</th>
-                        <th>Descrição Breve</th>
-                        <th class="text-end">Ações de Mestre</th>
+                        <th class="ps-4" style="width: 80px">ID</th>
+                        <th>NOME DO MUNDO</th>
+                        <th>SLUG (ACESSO)</th>
+                        <th class="d-none d-md-table-cell">DESCRIÇÃO</th>
+                        <th class="text-end pe-4">AÇÕES</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var c in Model)
                     {
                         <tr>
-                            <td class="text-muted">@c.Id</td>
-                            <td class="fw-bold text-warning">@c.Name</td>
-                            <td><code>/@c.NomeSimples</code></td>
-                            <td class="text-truncate" style="max-width: 300px;">@c.Description</td>
-                            <td class="text-end">
-                                <a asp-action="Configurar" asp-route-campanhaId="@c.Id" class="btn btn-sm btn-outline-info me-1" title="Configurações e Webhooks">
-                                    ⚙️ Configs
-                                </a>
-                                
-                                <a asp-action="EditarCampanha" asp-route-id="@c.Id" class="btn btn-sm btn-outline-light me-1">
-                                    ✏️ Editar
-                                </a>
-                                
-                                <a asp-action="DeletarCampanha" asp-route-id="@c.Id" class="btn btn-sm btn-outline-danger">
-                                    🗑️ Deletar
-                                </a>
+                            <td class="ps-4 text-muted font-monospace">#@c.Id</td>
+                            <td>
+                                <span class="fw-bold text-white">@c.Name</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary bg-opacity-25 text-info border border-info border-opacity-25">
+                                    /C/@c.NomeSimples
+                                </span>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <small class="text-muted text-truncate d-block" style="max-width: 250px;">
+                                    @c.Description
+                                </small>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group">
+                                    @* Link para a nova View Unificada *@
+                                    <a asp-action="Editar" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning" title="Gerenciar Essência">
+                                        <i class="bi bi-gear-fill me-1"></i> Gerenciar
+                                    </a>
+
+                                    @* Formulário de Exclusão Segura via POST *@
+                                    <form asp-action="DeletarCampanha" asp-route-id="@c.Id" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger ms-1" 
+                                                onclick="return confirm('Mestre, apagar um mundo destruirá todas as crônicas e configurações ligadas a ele. Confirmar destruição?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -64,3 +84,16 @@
         </div>
     }
 </div>
+
+<style>
+    /* Ajuste de contraste para a tabela */
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 193, 7, 0.05) !important;
+        transition: 0.3s;
+    }
+    .table td {
+        padding-top: 15px;
+        padding-bottom: 15px;
+        border-color: #2d2d2d;
+    }
+</style>

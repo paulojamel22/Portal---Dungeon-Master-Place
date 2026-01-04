@@ -1,77 +1,103 @@
-﻿@model IEnumerable<PortalDMPlace.Models.Noticia>
-
+@model IEnumerable<PortalDMPlace.Models.Noticia>
 @{
-    ViewData["Title"] = "Painel do Mestre";
+    ViewData["Title"] = "Painel de Controle";
     Layout = "_LayoutAdmin";
 }
 
-<div class="container py-4">
+<div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-warning mb-0">📜 Crônicas do Reino (Painel GM)</h2>
-        <a asp-action="Criar" class="btn btn-warning fw-bold text-dark shadow">
-            ✨ Forjar Nova Notícia
-        </a>
+        <div>
+            <h2 class="text-warning fw-bold mb-0">Saudações, Mestre @User.Identity?.Name!</h2>
+            <p class="text-muted">O destino de seus mundos está em suas mãos.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-dark border border-secondary p-2">
+                <i class="bi bi-clock-history me-1 text-warning"></i> @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+            </span>
+        </div>
     </div>
 
-    @if (TempData["Sucesso"] != null)
-    {
-        <div class="alert alert-success border-0 shadow-sm mb-4">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Sucesso"]
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);">
+                <div class="card-body p-4 border-start border-4 border-warning rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-light text-uppercase small fw-bold mb-2">Campanhas Ativas</h6>
+                            <h2 class="mb-0 fw-bold text-white">@ViewBag.TotalCampanhas</h2>
+                        </div>
+                        <i class="bi bi-map fs-1 text-warning opacity-75"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-    }
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);">
+                <div class="card-body p-4 border-start border-4 border-info rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-light text-uppercase small fw-bold">Crônicas Registradas</h6>
+                            <h2 class="mb-0 fw-bold text-white">@ViewBag.TotalNoticias</h2>
+                        </div>
+                        <i class="bi bi-journal-text fs-1 text-info opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);">
+                <div class="card-body p-4 border-start border-4 border-success rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-light text-uppercase small fw-bold">Acesso ao Foundry</h6>
+                            <p class="mb-0 small text-light">Sistemas Online</p>
+                        </div>
+                        <i class="bi bi-cpu fs-1 text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="table-responsive shadow-lg rounded-3">
-        <table class="table table-dark table-hover align-middle mb-0">
-            <thead class="table-dark border-bottom border-warning">
-                <tr class="text-warning">
-                    <th>Título da Crônica</th>
-                    <th>Campanha</th>
-                    <th>Data de Registro</th>
-                    <th class="text-end">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var noticia in Model)
-                {
-                    <tr>
-                        <td class="fw-bold">@noticia.Titulo</td>
-                        <td>
-                            @if (noticia.CampanhaId == 1)
-                            {
-                                <span class="badge rounded-pill bg-warning text-dark px-3">Ecos de Aetheria</span>
-                            }
-                            else if (noticia.CampanhaId == 2)
-                            {
-                                <span class="badge rounded-pill bg-danger px-3">Desafio de Sangue</span>
-                            }
-                            else
-                            {
-                                <span class="badge rounded-pill bg-secondary px-3">
-                                    @(noticia.Campanha?.Name ?? "Outra")
-                                </span>
-                            }
-                        </td>
-                        <td class="text-muted">
-                            <i class="bi bi-calendar3 me-1"></i> 
-                            @noticia.DataPublicacao.ToString("dd/MM/yyyy HH:mm")
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group shadow-sm">
-                                <a asp-action="Detalhes" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-info" title="Visualizar">
-                                    👁️
-                                </a>
-                                <a asp-action="Editar" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-warning" title="Editar">
-                                    ✏️
-                                </a>
-                                <a asp-action="Excluir" asp-route-id="@noticia.Id" class="btn btn-sm btn-outline-danger" 
-                                   onclick="return confirm('Mestre, tem certeza que deseja apagar este registro dos anais do tempo?')" title="Excluir">
-                                    🗑️
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="card bg-dark border-secondary">
+        <div class="card-header border-secondary d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-lightning-charge me-2"></i> Notícias Recentes</h5>
+            <a asp-controller="Noticia" asp-action="Criar" class="btn btn-sm btn-warning fw-bold">
+                <i class="bi bi-plus-lg"></i> Nova Notícia
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead class="bg-black">
+                        <tr class="text-light small">
+                            <th class="ps-4">TÍTULO</th>
+                            <th>CAMPANHA</th>
+                            <th>DATA</th>
+                            <th class="text-end pe-4">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">@item.Titulo</td>
+                                <td>
+                                    <span class="badge bg-secondary border border-light border-opacity-25">
+                                        @item.Campanha?.Name
+                                    </span>
+                                </td>
+                                <td class="text-light small">@item.DataPublicacao.ToString("dd/MM/yy")</td>
+                                <td class="text-end pe-4">
+                                    <a asp-controller="Noticia" asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

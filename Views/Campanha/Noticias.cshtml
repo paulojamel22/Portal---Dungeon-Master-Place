@@ -1,0 +1,83 @@
+@model IEnumerable<PortalDMPlace.Models.Noticia>
+@using PortalDMPlace.Functions
+@{
+    var settings = ViewBag.Settings as PortalDMPlace.Models.Settings ?? new PortalDMPlace.Models.Settings();
+    var campanha = ViewBag.Campanha as PortalDMPlace.Models.Campanha;
+    
+    // Injetamos o estilo dinâmico vindo do Helper
+    var dynamicStyle = HelpersFunctions.GetInlineStyle(settings);
+    
+    ViewData["Title"] = campanha?.Name;
+}
+
+<style>
+    :root { @Html.Raw(dynamicStyle) }
+
+    .campanha-banner {
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('@settings.BannerUrl');
+        background-size: cover;
+        background-position: center;
+        min-height: 40vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 3px solid var(--primary-color);
+    }
+
+    .btn-campanha {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .btn-campanha:hover {
+        background-color: var(--secondary-color);
+        filter: brightness(1.2);
+    }
+
+    .card-noticia {
+        border-left: 4px solid var(--primary-color) !important;
+        background-color: #1a1a1a;
+        transition: transform 0.2s;
+    }
+
+    .card-noticia:hover { transform: scale(1.02); }
+</style>
+
+<div class="campanha-banner mb-5">
+    <div class="text-center text-white">
+        @if(campanha != null)
+        {
+            <h1 class="display-3 fw-bold" style="font-family: var(--font-main);">@campanha.Name</h1>
+        }
+        <p class="lead">@settings.ChamadaCard</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        @foreach (var noticia in Model)
+        {
+            <div class="col-md-4">
+                <div class="card card-noticia h-100 shadow-sm text-white">
+                    @if (!string.IsNullOrEmpty(noticia.ImagemUrl))
+                    {
+                        <img src="@noticia.ImagemUrl" class="card-img-top" alt="@noticia.Titulo">
+                    }
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" style="color: var(--primary-color)">@noticia.Titulo</h5>
+                        <p class="card-text text-secondary small">@HelpersFunctions.FormatLoreDate(noticia.DataPublicacao)</p>
+                        
+                        @if(campanha != null && noticia.CampanhaId == campanha.Id)
+                        {
+                            <a asp-controller="Campanha" asp-action="Detalhes" asp-route-slug="@campanha.NomeSimples" asp-route-id="@noticia.Id" class="btn btn-campanha mt-auto">
+                                Ler Crônica
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,66 @@
+@model PortalDMPlace.Models.Noticia
+@using PortalDMPlace.Functions
+@{
+    // Usamos o operador ?? para garantir que 'settings' nunca seja nulo para o Helper
+    var settings = ViewBag.Settings as PortalDMPlace.Models.Settings ?? new PortalDMPlace.Models.Settings();
+    var campanha = ViewBag.Campanha as PortalDMPlace.Models.Campanha;
+    
+    // Agora o compilador sabe que 'settings' não é nulo aqui
+    var dynamicStyle = HelpersFunctions.GetInlineStyle(settings);
+    
+    ViewData["Title"] = Model?.Titulo ?? "Crônica";
+}
+
+<style>
+    :root { @Html.Raw(dynamicStyle) }
+    
+    body { font-family: var(--font-main); background-color: #0b0b0b; color: #eee; }
+    
+    .noticia-header { border-bottom: 2px solid var(--primary-color); padding-bottom: 20px; }
+    
+    .conteudo-noticia { font-size: 1.2rem; line-height: 1.8; }
+    
+    .conteudo-noticia strong { color: var(--primary-color); }
+</style>
+
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="noticia-header mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        @* Check de segurança para a campanha *@
+                        @if (campanha != null)
+                        {
+                            <li class="breadcrumb-item">
+                                <a href="/@campanha.NomeSimples" style="color: var(--primary-color)">@campanha.Name</a>
+                            </li>
+                        }
+                        <li class="breadcrumb-item active text-muted">Crônica</li>
+                    </ol>
+                </nav>
+                @* Use o operador ?. para evitar erro se Model for nulo *@
+                <h1 class="display-4 fw-bold">@Model?.Titulo</h1>
+                <p class="text-muted small">
+                    Postado por <strong>@Model?.Autor</strong> em @(Model != null ? HelpersFunctions.FormatLoreDate(Model.DataPublicacao) : "")
+                </p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model?.ImagemUrl))
+            {
+                <img src="@Model.ImagemUrl" class="img-fluid rounded-4 mb-4 shadow-lg border border-secondary" alt="@Model.Titulo">
+            }
+
+            <div class="conteudo-noticia">
+                @Html.Raw(Model?.Conteudo)
+            </div>
+
+            <div class="mt-5 pt-4 border-top border-secondary text-center">
+                @if (campanha != null)
+                {
+                    <a asp-controller="Campanha" asp-action="Noticias" asp-route-slug="@campanha.NomeSimples" class="btn btn-outline-light px-5">Voltar para @campanha.Name</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

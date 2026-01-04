@@ -1,53 +1,54 @@
 ﻿@model IEnumerable<PortalDMPlace.Models.Campanha>
+@inject PortalDMPlace.Functions.HelpersFunctions Helpers
 @{
     ViewData["Title"] = "Portais do DM Place";
 }
 
 <style>
-    .portal-title {
-        font-family: 'Georgia', serif;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-    }
+    .portal-title { font-family: 'Georgia', serif; letter-spacing: 2px; text-transform: uppercase; }
 
     .card-portal {
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         border-width: 2px;
         overflow: hidden;
+        background-color: #0d0d0d !important;
+        border-color: var(--primary-color) !important;
     }
 
     .card-portal:hover {
         transform: translateY(-10px) scale(1.02);
-    }
-
-    /* Brilho Dourado para Aetheria ou Campanhas de Luz */
-    .glow-warning:hover {
-        box-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
-        border-color: #ffc107 !important;
-    }
-
-    /* Brilho Sanguíneo para Desafio ou Campanhas Sombrias */
-    .glow-danger:hover {
-        box-shadow: 0 0 30px rgba(220, 53, 69, 0.4);
-        border-color: #dc3545 !important;
+        box-shadow: 0 0 30px var(--glow-color) !important;
     }
 
     .img-portal {
-        height: 250px;
+        height: 280px;
         object-fit: cover;
-        filter: grayscale(30%) brightness(0.8);
+        filter: grayscale(40%) brightness(0.7);
         transition: all 0.5s ease;
     }
 
     .card-portal:hover .img-portal {
         filter: grayscale(0%) brightness(1);
-        transform: scale(1.1);
+        transform: scale(1.05);
+    }
+
+    .btn-portal {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .btn-portal:hover {
+        background-color: var(--secondary-color);
+        color: white;
+        filter: brightness(1.2);
     }
 
     .bg-overlay-gradient {
-        background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9));
-        margin-top: -60px;
-        padding-top: 20px;
+        background: linear-gradient(to bottom, transparent, rgba(0,0,0,1) 80%);
+        margin-top: -80px;
+        padding-top: 40px;
         position: relative;
         z-index: 2;
     }
@@ -55,44 +56,43 @@
 
 <div class="container py-5">
     <div class="text-center mb-5 mt-4">
-        <h1 class="text-warning portal-title display-3 fw-bold mb-2" style="text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);">
+        <h1 class="text-warning portal-title display-3 fw-bold mb-2" style="text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);">
             🌌 PORTAIS INTERPLANARES
         </h1>
-        <p class="text-muted fs-5">
-            O destino de mil mundos converge aqui. Escolha sua crônica, aventureiro.
-        </p>
+        <p class="text-muted fs-5">O destino de mil mundos converge aqui. Escolha sua crônica.</p>
     </div>
 
     <div class="row justify-content-center g-5">
         @foreach (var campanha in Model)
         {
-            // Lógica dinâmica de cores baseada no NomeSimples ou ID
-            var isAetheria = campanha.NomeSimples.Contains("Aetheria", StringComparison.OrdinalIgnoreCase);
-            var colorClass = isAetheria ? "warning" : "danger";
-            var glowClass = isAetheria ? "glow-warning" : "glow-danger";
+            // Buscamos as configurações de cada campanha via Helper
+            var settings = await Helpers.GetSettingsAsync(campanha.Id);
             
             <div class="col-md-5">
-                <div class="card card-portal bg-dark border-@colorClass @glowClass shadow-lg h-100 rounded-4">
+                @* Definimos variáveis CSS locais para este card específico *@
+                <div class="card card-portal h-100 rounded-4 shadow-lg" 
+                     style="--primary-color: @settings.TemaCorPrimaria; 
+                            --secondary-color: @settings.TemaCorSecundaria; 
+                            --glow-color: @(settings.TemaCorPrimaria)66;"> @* O '66' adiciona transparência ao Hex *@
                     
-                    @* Imagem com efeito de zoom no hover *@
                     <div class="overflow-hidden">
-                        <img src="~/img/@(campanha.NomeSimples.ToLower()).png" 
+                        <img src="@settings.CardThumbnailUrl" 
                              class="card-img-top img-portal" 
                              alt="@campanha.Name"
                              onerror="this.src='/img/default_portal.png'">
                     </div>
 
                     <div class="card-body d-flex flex-column bg-overlay-gradient">
-                        <h2 class="card-title text-@colorClass portal-title h3 mb-3">
+                        <h2 class="card-title portal-title h3 mb-3" style="color: @settings.TemaCorPrimaria">
                              @campanha.Name
                         </h2>
                         
-                        <p class="card-text text-light opacity-75 flex-grow-1" style="line-height: 1.6;">
-                            @campanha.Description
+                        <p class="card-text text-light opacity-75 flex-grow-1">
+                            @settings.ChamadaCard
                         </p>
                        
                         <div class="mt-4">
-                            <a href="/@campanha.NomeSimples" class="btn btn-@colorClass w-100 fw-bold py-3 rounded-pill shadow">
+                            <a href="C/@campanha.NomeSimples" class="btn btn-portal w-100 fw-bold py-3 rounded-pill shadow">
                                 <i class="bi bi-door-open-fill me-2"></i> Atravessar Portal
                             </a>
                         </div>
@@ -102,7 +102,3 @@
         }
     </div>
 </div>
-
-<footer class="text-center mt-5 pt-5 opacity-50">
-    <p class="text-light small">O Portal DM Place é mantido pela vontade do Mestre. Role iniciativa.</p>
-</footer>

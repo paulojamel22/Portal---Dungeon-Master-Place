@@ -1,9 +1,11 @@
-﻿@inject IHttpContextAccessor HttpContextAccessor
+﻿@using PortalDMPlace.Functions
+@inject IHttpContextAccessor HttpContextAccessor
+@inject HelpersFunctions Helpers
 @{
     Layout = null;
-    // Captura o controller atual para marcar o link ativo na sidebar
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var sessaoId = HttpContextAccessor?.HttpContext?.Session.GetInt32("Campanha");
 }
 
 <!DOCTYPE html>
@@ -11,18 +13,49 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Admin Portal DM</title>
+    <title>@ViewData["Title"] - DM Control</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
     
     <style>
-        :root {
+        /* Mantendo seus estilos originais que estão ótimos */
+            :root {
             --sidebar-width: 240px;
             --topbar-height: 65px;
             --accent-color: #ffc107;
             --dark-bg: #121212;
             --card-bg: #1e1e1e;
+            --text-muted: #b0b0b0; /* Um cinza claro que destaca no preto */
+            --input-bg: #252525;
+        }
+
+        /* Ajuste global para textos secundários */
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Labels de formulários nas Configurações */
+        .form-label {
+            color: #e0e0e0; /* Quase branco para leitura imediata */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Inputs para não ficarem "apagados" */
+        .form-control {
+            background-color: var(--input-bg);
+            border: 1px solid #333;
+            color: #fff;
+        }
+        
+        .form-control:focus {
+            background-color: #2d2d2d;
+            border-color: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.1);
         }
 
         body {
@@ -32,116 +65,43 @@
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        /* Sidebar Customizada */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: var(--sidebar-width);
-            background-color: var(--dark-bg);
-            border-right: 1px solid #2d2d2d;
-            z-index: 1001;
-            transition: all 0.3s;
+            position: fixed; top: 0; left: 0; height: 100vh;
+            width: var(--sidebar-width); background-color: var(--dark-bg);
+            border-right: 1px solid #2d2d2d; z-index: 1001;
         }
 
         .sidebar-header {
-            height: var(--topbar-height);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid #2d2d2d;
-            background-color: #000;
-        }
-
-        .sidebar-menu {
-            padding: 20px 0;
+            height: var(--topbar-height); display: flex; align-items: center;
+            padding: 0 20px; border-bottom: 1px solid #2d2d2d; background-color: #000;
         }
 
         .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            color: #999;
-            padding: 12px 20px;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: 0.3s;
+            display: flex; align-items: center; color: #999;
+            padding: 12px 20px; text-decoration: none; transition: 0.3s;
             border-left: 4px solid transparent;
         }
 
-        .sidebar-menu a i { font-size: 1.2rem; }
-
-        .sidebar-menu a:hover {
-            color: var(--accent-color);
-            background: rgba(255, 193, 7, 0.05);
-        }
-
-        .sidebar-menu a.active {
-            color: var(--accent-color);
-            background: rgba(255, 193, 7, 0.1);
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            color: var(--accent-color); background: rgba(255, 193, 7, 0.1);
             border-left-color: var(--accent-color);
-            font-weight: bold;
         }
 
-        /* Topbar */
         .topbar {
-            position: fixed;
-            top: 0;
-            left: var(--sidebar-width);
-            right: 0;
-            height: var(--topbar-height);
-            background-color: var(--dark-bg);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            border-bottom: 1px solid #2d2d2d;
-            z-index: 1000;
+            position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+            height: var(--topbar-height); background-color: var(--dark-bg);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px; border-bottom: 1px solid #2d2d2d; z-index: 1000;
         }
 
         .main-content {
-            margin-left: var(--sidebar-width);
-            margin-top: var(--topbar-height);
-            padding: 40px;
-            min-height: calc(100vh - var(--topbar-height));
+            margin-left: var(--sidebar-width); margin-top: var(--topbar-height); padding: 40px;
         }
 
         .campanha-badge {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-
-        /* Utilitários */
-        .text-warning { color: var(--accent-color) !important; }
-        .card { background-color: var(--card-bg); border: 1px solid #333; }
-
-        /* --- Ajustes de Legibilidade (Adicionar ao final do seu <style>) --- */
-
-        /* Melhora o "Logado como:" e outros textos secundários */
-        .text-muted { 
-            color: #aaaaaa !important; /* Um cinza claro que contrasta com o fundo #121212 */
-        }
-
-        /* Garante que o nome do usuário e textos 'small' fiquem nítidos */
-        .text-white, .small.fw-bold {
-            color: #ffffff !important;
-        }
-
-        /* Ajuste na borda lateral para não ficar invisível */
-        .border-secondary {
-            border-color: #444 !important;
-        }
-
-        /* Melhora os títulos menores na sidebar */
-        small.text-muted.text-uppercase {
-            color: var(--accent-color) !important; /* Atalhos agora brilham em amarelo */
-            opacity: 0.8;
-            letter-spacing: 1px;
+            background: rgba(255, 193, 7, 0.1); border: 1px solid var(--accent-color);
+            color: var(--accent-color); padding: 5px 15px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: bold;
         }
     </style>
 </head>
@@ -152,26 +112,37 @@
             <span class="text-warning fw-bold fs-5"><i class="bi bi-dice-5-fill"></i> DM CONTROL</span>
         </div>
         <div class="sidebar-menu">
+            @* 1. Dashboard Principal *@
             <a asp-controller="Admin" asp-action="Index" class="@(currentController == "Admin" && currentAction == "Index" ? "active" : "")">
-                <i class="bi bi-journal-text me-3"></i> Notícias
-            </a>
-            <a asp-controller="Admin" asp-action="Campanhas" class="@(currentAction == "Campanhas" ? "active" : "")">
-                <i class="bi bi-map me-3"></i> Campanhas
-            </a>
-            <a asp-controller="Admin" asp-action="Configurar" class="@(currentAction == "Configurar" ? "active" : "")">
-                <i class="bi bi-gear-fill me-3"></i> Configurações
-            </a>
-            
-            <div class="mt-4 px-3">
-                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Atalhos</small>
-            </div>
-            <a href="/" target="_blank">
-                <i class="bi bi-box-arrow-up-right me-3"></i> Ver Site
+                <i class="bi bi-speedometer2 me-3"></i> Dashboard
             </a>
 
-            <div class="position-absolute bottom-0 w-100 border-top border-secondary border-opacity-25">
+            @* 2. Gestão de Notícias (Novo Controller Noticia) *@
+            <a asp-controller="Noticia" asp-action="Index" class="@(currentController == "Noticia" ? "active" : "")">
+                <i class="bi bi-journal-text me-3"></i> Notícias
+            </a>
+
+            @* 3. Gestão de Campanhas (IndexAdmin) *@
+            <a asp-controller="Campanha" asp-action="Index" class="@(currentController == "Campanha" && (currentAction == "Index" || currentAction == "CriarCampanha") ? "active" : "")">
+                <i class="bi bi-map me-3"></i> Campanhas
+            </a>
+
+            @* 4. Configurações Gerais *@
+            <a asp-controller="Admin" asp-action="Configuracoes" class="@(currentController == "Admin" && currentAction == "Configuracoes" ? "active" : "")">
+                <i class="bi bi-gear me-3"></i> Configurações
+            </a>
+            
+            <div class="mt-4 px-3">                
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Utilitários</small>
+            </div>
+            
+            <a href="/" target="_blank">
+                <i class="bi bi-box-arrow-up-right me-3"></i> Ver Site Público
+            </a>
+
+            <div class="position-absolute bottom-0 w-100 border-top border-secondary border-opacity-25 bg-black">
                 <a asp-controller="Admin" asp-action="Logout" class="text-danger">
-                    <i class="bi bi-power me-3"></i> Sair do Sistema
+                    <i class="bi bi-power me-3"></i> Encerrar Sessão
                 </a>
             </div>
         </div>
@@ -179,22 +150,20 @@
 
     <header class="topbar">
         <div class="d-flex align-items-center">
-            <h5 class="m-0 fw-bold">Painel de Gerenciamento</h5>
+            <h5 class="m-0 fw-bold">@ViewData["Title"]</h5>
         </div>
         
         <div class="d-flex align-items-center gap-3">
-            @{
-                var campanhaId = HttpContextAccessor?.HttpContext?.Session?.GetInt32("Campanha");
-                if (campanhaId != null)
-                {
-                    <span class="campanha-badge">
-                        <i class="bi bi-flag-fill me-1"></i> 
-                        @(campanhaId == 1 ? "Ecos de Aetheria" : "Desafio de Sangue")
-                    </span>
-                }
+            @if (sessaoId.HasValue)
+            {
+                var nomeCampanha = Helpers.GetCampaignNameById(sessaoId.Value);
+                <span class="campanha-badge">
+                    <i class="bi bi-stars me-1"></i> Mundo: @nomeCampanha
+                </span>
             }
+
             <div class="text-end ms-3 border-start ps-3 border-secondary">
-                <small class="d-block text-muted" style="font-size: 0.7rem;">Logado como:</small>
+                <small class="d-block text-muted" style="font-size: 0.7rem;">Mestre Logado:</small>
                 <span class="small fw-bold text-white">@User.Identity?.Name</span>
             </div>
         </div>

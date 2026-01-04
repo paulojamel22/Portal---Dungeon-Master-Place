@@ -11,26 +11,18 @@ namespace PortalDMPlace.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            // Usamos AsNoTracking para performance máxima na home
-            // e ToListAsync para não travar a thread principal do servidor
+            // Buscamos apenas as campanhas. 
+            // O dinamismo de cores e imagens será resolvido pelo Helper na View.
             var campanhas = await _context.Campanhas
                 .AsNoTracking()
                 .ToListAsync();
 
-            if (campanhas == null || !campanhas.Any())
+            if (campanhas == null || campanhas.Count == 0)
             {
-                // Mensagem amigável caso o banco esteja vazio (como no seu exemplo do GitHub)
-                TempData["Info"] = "Bem-vindo ao Portal Dungeon Master Place. Nenhuma crônica foi iniciada ainda.";
+                TempData["Info"] = "Nenhuma crônica foi iniciada ainda.";
             }
 
             return View(campanhas);
-        }
-
-        // Action para a página de erro padrão do ASP.NET Core
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View();
         }
     }
 }

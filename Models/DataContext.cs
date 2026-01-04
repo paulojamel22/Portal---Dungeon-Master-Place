@@ -33,7 +33,7 @@ namespace PortalDMPlace.Models
         public string Autor { get; set; } = "Mestre";
         public DateTime DataPublicacao { get; set; } = DateTime.Now;
         public string Categoria { get; set; } = "Atualização";
-        public string ImagemUrl { get; set; } = "./img/default.jpg";
+        public string ImagemUrl { get; set; } = "./img/noticias/default.jpg";
 
         public int CampanhaId { get; set; }
         [ForeignKey("CampanhaId")]
@@ -79,13 +79,22 @@ namespace PortalDMPlace.Models
     {
         public int Id { get; set; }
         public int CampanhaId { get; set; }
-    
+        
         // Webhooks e Integrações
         public string DiscordWebhookUrl { get; set; } = string.Empty;
-
-        // Configurações Visuais
-        public string TemaCorPrimaria { get; set; } = "#8e0000"; 
-        public bool ExibirRelogioSessao { get; set; } = true;
         public string FoundryUrl { get; set; } = "https://rpg.dmplace.com.br";
+
+        // --- CUSTOMIZAÇÃO VISUAL ---
+        public string TemaCorPrimaria { get; set; } = "#8e0000"; 
+        public string TemaCorSecundaria { get; set; } = "#3a0000";
+        public string FonteFamilia { get; set; } = "'Segoe UI', sans-serif";
+        
+        // Imagens dinâmicas
+        public string? BannerUrl { get; set; } = "/img/banners/default.png";
+        public string? CardThumbnailUrl { get; set; } = "/img/thumbnails/default.png";
+
+        // --- TEXTOS DINÂMICOS DA INTERFACE ---
+        public string? ChamadaCard { get; set; } = "Uma nova aventura começa.";
+        public bool ExibirRelogioSessao { get; set; } = true;
     }
 }
