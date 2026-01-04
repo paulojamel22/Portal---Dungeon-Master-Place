@@ -60,7 +60,7 @@ namespace PortalDMPlace.Controllers
                     if (ImagemFile != null && ImagemFile.Length > 0)
                     {
                         var fileName = Guid.NewGuid() + Path.GetExtension(ImagemFile.FileName);
-                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/imagens", fileName);
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/noticias", fileName);
                         
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
