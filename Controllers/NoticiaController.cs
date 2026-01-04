@@ -66,7 +66,7 @@ namespace PortalDMPlace.Controllers
                         {
                             await ImagemFile.CopyToAsync(stream);
                         }
-                        noticia.ImagemUrl = "/imagens/" + fileName;
+                        noticia.ImagemUrl = "/img/noticias/" + fileName;
                     }
 
                     noticia.DataPublicacao = DateTime.Now;
