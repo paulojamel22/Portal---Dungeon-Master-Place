@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PortalDMPlace.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PortalDMPlace.Functions;
+using PortalDMPlace.Enumerators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,43 @@ builder.Services.AddScoped<HelpersFunctions>();
 builder.Services.AddScoped<AccountObject>();
 
 var app = builder.Build();
+
+// --- RITUAL DE INICIALIZAÇÃO DO BANCO ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<DataContext>();
+        
+        // Garante que o banco e as tabelas existam (roda as migrations pendentes)
+        context.Database.Migrate();
+
+        // Verifica se já existe um desenvolvedor para não duplicar
+        if (!context.Accounts.Any(a => a.AccountType == AccountType.Developer))
+        {
+            var devAccount = new Account
+            {
+                Username = "Desenvolvedor",
+                // Hash fixo para "Dev123!" gerado uma única vez
+                HashPassword = BCrypt.Net.BCrypt.HashPassword("Dev123!"),
+                Name = "O Criador",
+                CreatedAt = DateTime.Now,
+                BirthDate = new DateTime(2000, 1, 1),
+                AccountType = AccountType.Developer
+            };
+
+            context.Accounts.Add(devAccount);
+            context.SaveChanges();
+            
+            Console.WriteLine("✅ A conta do Criador foi forjada com sucesso!");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Erro ao iniciar a realidade: {ex.Message}");
+    }
+}
 
 // 5. Pipeline de Execução
 if (!app.Environment.IsDevelopment())

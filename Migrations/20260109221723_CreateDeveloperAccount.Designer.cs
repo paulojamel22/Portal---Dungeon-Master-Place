@@ -11,8 +11,8 @@ using PortalDMPlace.Models;
 namespace PortalDMPlace.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260108014726_CampanhaTableUpdate")]
-    partial class CampanhaTableUpdate
+    [Migration("20260109221723_CreateDeveloperAccount")]
+    partial class CreateDeveloperAccount
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,13 +86,36 @@ namespace PortalDMPlace.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CriadorId");
+
                     b.ToTable("Campanhas");
+                });
+
+            modelBuilder.Entity("PortalDMPlace.Models.GlobalSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ManutencaoAtiva")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MensagemManutencao")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GlobalSettings");
                 });
 
             modelBuilder.Entity("PortalDMPlace.Models.Noticia", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AccountId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Autor")
@@ -122,6 +145,8 @@ namespace PortalDMPlace.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("CampanhaId");
 
@@ -177,13 +202,32 @@ namespace PortalDMPlace.Migrations
                     b.ToTable("Settings");
                 });
 
+            modelBuilder.Entity("PortalDMPlace.Models.Campanha", b =>
+                {
+                    b.HasOne("PortalDMPlace.Models.Account", "Criador")
+                        .WithMany()
+                        .HasForeignKey("CriadorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Criador");
+                });
+
             modelBuilder.Entity("PortalDMPlace.Models.Noticia", b =>
                 {
+                    b.HasOne("PortalDMPlace.Models.Account", "AutorAccount")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("PortalDMPlace.Models.Campanha", "Campanha")
                         .WithMany()
                         .HasForeignKey("CampanhaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AutorAccount");
 
                     b.Navigation("Campanha");
                 });

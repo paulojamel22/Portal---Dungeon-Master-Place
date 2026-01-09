@@ -134,6 +134,7 @@ namespace PortalDMPlace.Controllers
             var newAccount = new Account
             {
                 Name = model.Name,
+                BirthDate = model.BirthDate,
                 Username = model.Username,
                 // Email = model.Email, // Descomente se o campo Email estiver no Account
                 HashPassword = BCrypt.Net.BCrypt.HashPassword(model.Password),

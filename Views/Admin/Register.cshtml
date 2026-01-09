@@ -30,6 +30,17 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="BirthDate" class="form-label text-warning small fw-bold text-uppercase">Data de Nascimento</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-calendar"></i>
+                </span>
+                <input asp-for="BirthDate" type="date" class="form-control" required />
+            </div>
+            <span asp-validation-for="BirthDate" class="text-danger smaller"></span>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Username" class="form-label text-warning small fw-bold text-uppercase">Nome de Usuário</label>
             <div class="input-group">
                 <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">

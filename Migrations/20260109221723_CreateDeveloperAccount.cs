@@ -5,7 +5,7 @@
 namespace PortalDMPlace.Migrations
 {
     /// <inheritdoc />
-    public partial class ChangeImageURLDefaultValue : Migration
+    public partial class CreateDeveloperAccount : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -8,6 +8,9 @@ namespace PortalDMPlace.Models.ViewModels
         [Required(ErrorMessage = "O nome é obrigatório")]
         public string Name { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "A data de nascimento é obrigatória")]
+        public DateTime BirthDate { get; set; }
+
         [Required(ErrorMessage = "O nome de usuário é obrigatório")]
         [StringLength(20, MinimumLength = 4, ErrorMessage = "O usuário deve ter entre 4 e 20 caracteres")]
         public string Username { get; set; } = string.Empty;

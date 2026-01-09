@@ -88,8 +88,8 @@ namespace PortalDMPlace.Models
         public string Password { get; set; } = string.Empty; 
         public string HashPassword { get; set; } = string.Empty;
         public string ProfileImageUrl { get; set; } = "/img/profiles/default.png";
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime BirthDate { get; set; } = DateTime.Now.AddYears(-18);
+        public DateTime CreatedAt { get; set; }
+        public DateTime BirthDate { get; set; }
         public AccountType AccountType { get; set; } = AccountType.Player;
         public int CampanhaId { get; set; } // Campanha principal vinculada
     }
