@@ -1,0 +1,188 @@
+@using PortalDMPlace.Enumerators
+@model PortalDMPlace.Models.Account
+@inject PortalDMPlace.Functions.AccountObject CurrentUser
+
+@{
+    ViewData["Title"] = "Minha Ficha";
+    Layout = "_LayoutAdmin";
+
+    string auraClass = Model.AccountType switch {
+        AccountType.Developer => "aura-developer",
+        AccountType.Administrator => "aura-administrator",
+        AccountType.Master => "aura-master",
+        _ => "aura-player"
+    };
+}
+
+<style>
+    /* Suas variáveis de Aura mantidas */
+    .aura-developer { --aura-color: #6f42c1; --aura-shadow: rgba(111, 66, 193, 0.6); }
+    .aura-administrator { --aura-color: #ffc107; --aura-shadow: rgba(255, 193, 7, 0.6); }
+    .aura-master { --aura-color: #dc3545; --aura-shadow: rgba(220, 53, 69, 0.6); }
+    .aura-player { --aura-color: #6c757d; --aura-shadow: rgba(108, 117, 125, 0.4); }
+
+    .profile-avatar-container {
+        position: relative;
+        display: inline-block;
+        padding: 8px;
+        border-radius: 50%;
+        border: 3px solid var(--aura-color);
+        box-shadow: 0 0 25px var(--aura-shadow);
+        transition: all 0.5s ease;
+    }
+
+    .profile-avatar-container img {
+        width: 160px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+        background: #000;
+    }
+
+    /* Estilo do botão de upload sobre a imagem */
+    .btn-camera-upload {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background-color: var(--aura-color);
+        border: 2px solid #1a1a1a;
+        transition: transform 0.2s;
+    }
+    .btn-camera-upload:hover { transform: scale(1.1); color: white; }
+
+    .badge-power {
+        background-color: transparent;
+        border: 1px solid var(--aura-color);
+        color: var(--aura-color);
+        text-transform: uppercase;
+        font-weight: bold;
+        padding: 5px 15px;
+        letter-spacing: 1px;
+    }
+    
+    .bg-black-input { background-color: #080808 !important; }
+</style>
+
+<div class="container py-5">
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success shadow-sm mb-4">
+            <i class="bi bi-check2-circle me-2"></i> @TempData["Sucesso"]
+        </div>
+    }
+    @if (TempData["Erro"] != null)
+    {
+        <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger shadow-sm mb-4">
+            <i class="bi bi-exclamation-octagon me-2"></i> @TempData["Erro"]
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary btn-sm px-3">
+            <i class="bi bi-chevron-left me-1"></i> Voltar ao Painel
+        </a>
+        
+        @if (CurrentUser.IsDev)
+        {
+            <span class="badge bg-dark border border-purple text-purple px-3 py-2">
+                <i class="bi bi-terminal-fill me-1"></i> Nível de Acesso: Root
+            </span>
+        }
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-4">
+            <div class="card bg-dark border-secondary p-4 text-center h-100 shadow-lg" style="background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);">
+                <div class="profile-avatar-container @auraClass mb-4 mx-auto">
+                    <img src="@Model.ProfileImageUrl" id="avatar-preview" alt="Avatar do Mestre">
+                    
+                    <form asp-action="UpdateProfileImage" enctype="multipart/form-data" method="post" id="form-upload-avatar">
+                        <label for="file-upload" class="btn btn-camera-upload position-absolute bottom-0 end-0 rounded-circle text-white shadow">
+                            <i class="bi bi-camera-fill"></i>
+                            <input id="file-upload" type="file" name="profileImage" onchange="submitAvatar()" hidden accept="image/*">
+                        </label>
+                    </form>
+                </div>
+
+                <h3 class="text-white fw-bold mb-1" style="font-family: 'Cinzel', serif;">@Model.Name</h3>
+                <div class="mb-3">
+                    <span class="badge badge-power @auraClass">
+                        @Model.AccountType.ToString()
+                    </span>
+                </div>
+
+                <hr class="border-secondary opacity-25">
+
+                <div class="text-start px-2 mt-4">
+                    <div class="mb-3">
+                        <label class="text-muted d-block small text-uppercase fw-bold">Codinome</label>
+                        <span class="text-white">@Model.Username</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted d-block small text-uppercase fw-bold">Nas Crônicas desde</label>
+                        <span class="text-white">@Model.CreatedAt.ToString("MMMM 'de' yyyy")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card bg-dark border-secondary p-4 shadow-lg h-100">
+                <h4 class="text-warning mb-4" style="font-family: 'Cinzel', serif;">
+                    <i class="bi bi-shield-lock-fill me-2"></i>Segurança do Pergaminho
+                </h4>
+                
+                <form asp-action="ChangePassword" method="post">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Senha Atual</label>
+                        <input type="password" name="currentPassword" class="form-control bg-black-input text-white border-secondary shadow-none" required>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Nova Senha</label>
+                            <input type="password" name="newPassword" class="form-control bg-black-input text-white border-secondary shadow-none" required minlength="6">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Confirmar Nova Senha</label>
+                            <input type="password" name="confirmPassword" class="form-control bg-black-input text-white border-secondary shadow-none" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow">
+                            <i class="bi bi-stars me-2"></i>Atualizar Identidade Arcanista
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-auto pt-4 text-center">
+                    <p class="text-muted smaller mb-0">Proteja sua senha. Nem mesmo os deuses devem saber sua palavra-chave.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function submitAvatar() {
+        const input = document.getElementById('file-upload');
+        if (input.files && input.files[0]) {
+            // Preview Imediato
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatar-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+            
+            // Submit automático após breve delay para o mestre ver o preview
+            setTimeout(() => {
+                document.getElementById('form-upload-avatar').submit();
+            }, 500);
+        }
+    }
+</script>

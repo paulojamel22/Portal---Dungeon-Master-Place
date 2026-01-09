@@ -33,6 +33,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<HelpersFunctions>();
+builder.Services.AddScoped<AccountObject>();
 
 var app = builder.Build();
 
@@ -53,6 +54,8 @@ app.UseSession(); // Sessão deve vir antes da Autenticação/Autorização
 app.UseAuthentication(); // Habilita o reconhecimento de quem está logado
 app.UseAuthorization();
 
+// 2. Chame o seu Middleware customizado AQUI
+app.UseMiddleware<UserSessionMiddleware>();
 
 // 1. Rota Padrão (HomeController)
 app.MapControllerRoute(

@@ -54,4 +54,26 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const slugInput = document.querySelector('input[name="NomeSimples"]');
+
+            if (nameInput && slugInput) {
+                nameInput.addEventListener('input', function () {
+                    // Transforma "O Reino de Aetheria" em "o-reino-de-aetheria"
+                    const slug = this.value
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                        .replace(/[^a-z0-9]/g, '-')     // Troca símbolos por hifens
+                        .replace(/-+/g, '-')             // Remove hifens duplos
+                        .replace(/^-|-$/g, '');          // Remove hifens no início ou fim
+                    
+                    slugInput.value = slug;
+                });
+            }
+        });
+    </script>
 }

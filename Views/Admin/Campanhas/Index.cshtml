@@ -1,99 +1,141 @@
 ﻿@model IEnumerable<PortalDMPlace.Models.Campanha>
+@inject PortalDMPlace.Functions.AccountObject CurrentUser
 @{
-    ViewData["Title"] = "Gerenciar Campanhas";
+    ViewData["Title"] = "Painel de Mundos";
     Layout = "_LayoutAdmin";
+    
+    // Filtro visual: Se for Admin/Dev, ele vê tudo, senão, vê apenas as suas.
+    bool isAdmin = CurrentUser.IsAtLeastAdmin;
 }
+
+<style>
+    .campanha-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 1px solid #2d2d2d;
+        overflow: hidden;
+        background: #141414;
+    }
+    .campanha-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--dm-gold);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 15px rgba(255, 193, 7, 0.1);
+    }
+    .status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 2;
+    }
+    .card-header-img {
+        height: 120px;
+        background: linear-gradient(45deg, #1a1a1a, #000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .card-header-img i { font-size: 3rem; opacity: 0.3; color: var(--dm-gold); }
+    
+    .stat-card {
+        background: rgba(255, 193, 7, 0.03);
+        border-left: 4px solid var(--dm-gold);
+    }
+</style>
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="text-warning mb-0"><i class="bi bi-map-fill me-2"></i> Gerenciar Mundos</h2>
-            <p class="text-muted small">Controle a estrutura e a identidade visual de suas jornadas.</p>
+            <h2 class="text-warning mb-0" style="font-family: 'Cinzel', serif;">
+                <i class="bi bi-grid-1x2-fill me-2"></i> 
+                @(isAdmin ? "Controle de Multiversos" : "Meus Domínios")
+            </h2>
+            <p class="text-muted small">
+                @(isAdmin ? "Visão global de todas as campanhas ativas no portal." : "Gerencie a essência e os segredos dos seus mundos.")
+            </p>
         </div>
-        <a asp-action="Criar" class="btn btn-warning fw-bold text-dark">
+        <a asp-action="Criar" class="btn btn-warning fw-bold text-dark px-4">
             <i class="bi bi-plus-lg me-1"></i> NOVA CAMPANHA
         </a>
     </div>
 
-    @if (TempData["Sucesso"] != null)
-    {
-        <div class="alert alert-success border-0 shadow-sm mb-4">
-            <i class="bi bi-check-all me-2"></i> @TempData["Sucesso"]
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="card stat-card p-3 shadow-sm">
+                <small class="text-muted text-uppercase fw-bold">Campanhas Ativas</small>
+                <h3 class="text-white mb-0">@Model.Count()</h3>
+            </div>
         </div>
-    }
+        @if(isAdmin) {
+            <div class="col-md-4">
+                <div class="card stat-card p-3 shadow-sm border-info" style="border-left-color: #0dcaf0;">
+                    <small class="text-muted text-uppercase fw-bold">Mestres Ativos</small>
+                    <h3 class="text-white mb-0">@Model.GroupBy(c => c.CriadorId).Count()</h3>
+                </div>
+            </div>
+        }
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="card bg-dark border-secondary p-5 text-center">
+        <div class="card bg-dark border-secondary p-5 text-center border-dashed">
             <i class="bi bi-journal-x display-1 text-secondary mb-3"></i>
-            <h4 class="text-white-50">Nenhum mundo foi forjado ainda.</h4>
-            <p class="text-muted">Comece criando sua primeira campanha para dar vida às suas crônicas.</p>
+            <h4 class="text-white-50">O vazio impera por aqui...</h4>
+            <p class="text-muted">Nenhum mundo foi forjado. Que tal dar o primeiro passo?</p>
+            <div class="mt-3">
+                <a asp-action="Criar" class="btn btn-outline-warning">Forjar Primeira Campanha</a>
+            </div>
         </div>
     }
     else
     {
-        <div class="table-responsive shadow-lg rounded-3">
-            <table class="table table-dark table-hover align-middle mb-0">
-                <thead class="bg-black text-warning border-bottom border-warning">
-                    <tr>
-                        <th class="ps-4" style="width: 80px">ID</th>
-                        <th>NOME DO MUNDO</th>
-                        <th>SLUG (ACESSO)</th>
-                        <th class="d-none d-md-table-cell">DESCRIÇÃO</th>
-                        <th class="text-end pe-4">AÇÕES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var c in Model)
-                    {
-                        <tr>
-                            <td class="ps-4 text-muted font-monospace">#@c.Id</td>
-                            <td>
-                                <span class="fw-bold text-white">@c.Name</span>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary bg-opacity-25 text-info border border-info border-opacity-25">
-                                    /C/@c.NomeSimples
-                                </span>
-                            </td>
-                            <td class="d-none d-md-table-cell">
-                                <small class="text-muted text-truncate d-block" style="max-width: 250px;">
-                                    @c.Description
-                                </small>
-                            </td>
-                            <td class="text-end pe-4">
+        <div class="row g-4">
+            @foreach (var c in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card campanha-card h-100">
+                        <div class="card-header-img">
+                            <i class="bi bi-map"></i>
+                            <span class="badge bg-black border border-info text-info status-badge">
+                                <i class="bi bi-link-45deg"></i> /C/@c.NomeSimples
+                            </span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="text-warning fw-bold mb-1">@c.Name</h5>
+                            <p class="text-muted small text-truncate" style="max-height: 40px;">
+                                @(string.IsNullOrEmpty(c.Description) ? "Sem descrição épica ainda..." : c.Description)
+                            </p>
+                            
+                            <hr class="border-secondary opacity-25">
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
                                 <div class="btn-group">
-                                    @* Link para a nova View Unificada *@
-                                    <a asp-action="Editar" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning" title="Gerenciar Essência">
-                                        <i class="bi bi-gear-fill me-1"></i> Gerenciar
+                                    <a asp-action="Editar" asp-route-id="@c.Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil-square me-1"></i> Gerenciar
                                     </a>
-
-                                    @* Formulário de Exclusão Segura via POST *@
-                                    <form asp-action="DeletarCampanha" asp-route-id="@c.Id" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger ms-1" 
-                                                onclick="return confirm('Mestre, apagar um mundo destruirá todas as crônicas e configurações ligadas a ele. Confirmar destruição?')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <a href="/C/@c.NomeSimples" target="_blank" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                 </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+
+                                <form asp-action="DeletarCampanha" asp-route-id="@c.Id" method="post" onsubmit="return confirm('Destruir este mundo permanentemente?')">
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        @if(isAdmin) {
+                            <div class="card-footer bg-black border-top border-secondary py-2">
+                                <small class="text-muted" style="font-size: 0.7rem;">
+                                    <i class="bi bi-person-circle me-1"></i> Mestre ID: #@c.CriadorId
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
-
-<style>
-    /* Ajuste de contraste para a tabela */
-    .table-hover tbody tr:hover {
-        background-color: rgba(255, 193, 7, 0.05) !important;
-        transition: 0.3s;
-    }
-    .table td {
-        padding-top: 15px;
-        padding-bottom: 15px;
-        border-color: #2d2d2d;
-    }
-</style>

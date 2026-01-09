@@ -11,12 +11,13 @@ using PortalDMPlace.Models;
 
 namespace PortalDMPlace.Controllers
 {
-    [Authorize] // Garante que toda a gestão de notícias exija login
-    [Route("Admin/Noticias")] // Define a rota base para o controller
-    public partial class NoticiaController(DataContext context, IHttpClientFactory httpClientFactory) : Controller
+    [Authorize]
+    [Route("Admin/Noticias")]
+    public partial class NoticiaController(DataContext context, IHttpClientFactory httpClientFactory, AccountObject user) : Controller
     {
         private readonly DataContext _context = context;
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+        private readonly AccountObject _user = user; // Injetado para saber quem é o autor
         private HelpersFunctions Functions => new(_context);
 
         [GeneratedRegex(@"<\/?(div|article|span|cite)[^>]*>", RegexOptions.IgnoreCase)]
@@ -26,22 +27,30 @@ namespace PortalDMPlace.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var noticias = await _context.Noticias
-                .Include(n => n.Campanha) // Importante para mostrar o nome da campanha na tabela
-                .OrderByDescending(n => n.DataPublicacao)
-                .ToListAsync();
+            var query = _context.Noticias.Include(n => n.Campanha).AsQueryable();
 
+            // SOBERANIA: Se não for Admin/Dev, vê apenas as suas notícias
+            if (!_user.IsAtLeastAdmin)
+            {
+                query = query.Where(n => n.AccountId == _user.Id);
+            }
+
+            var noticias = await query.OrderByDescending(n => n.DataPublicacao).ToListAsync();
             return View("~/Views/Admin/Noticias/Index.cshtml", noticias);
         }
 
         // --- CRIAÇÃO ---
         [HttpGet("Criar")]
-        public IActionResult Criar()
+        public async Task<IActionResult> Criar()
         {
-            var name = _context.Accounts.FirstOrDefault()?.Name;
-            ViewBag.Campanhas = _context.Campanhas.ToList(); // Necessário para o Select de campanhas
+            // Busca apenas as campanhas que o mestre possui (ou todas se for Admin)
+            IQueryable<Campanha> campanhasQuery = _context.Campanhas;
+            if (!_user.IsAtLeastAdmin)
+                campanhasQuery = campanhasQuery.Where(c => c.CriadorId == _user.Id);
+
+            ViewBag.Campanhas = await campanhasQuery.ToListAsync();
             ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
-            ViewBag.Name = name;
+            ViewBag.DefaultAutor = _user.Name; // Sugere o nome do mestre logado
             
             return View("~/Views/Admin/Noticias/Criar.cshtml");
         }
@@ -51,25 +60,28 @@ namespace PortalDMPlace.Controllers
         public async Task<IActionResult> Criar(Noticia noticia, IFormFile? ImagemFile)
         {
             ModelState.Remove("Conteudo");
-            ModelState.Remove("Campanha"); // Evita erro por não enviar o objeto Campanha inteiro
+            ModelState.Remove("Campanha");
+            ModelState.Remove("AutorAccount"); // Evita validação do objeto virtual
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Define o Autor (Soberania)
+                    noticia.AccountId = _user.Id;
+                    noticia.DataPublicacao = DateTime.Now;
+
                     if (ImagemFile != null && ImagemFile.Length > 0)
                     {
-                        var fileName = Guid.NewGuid() + Path.GetExtension(ImagemFile.FileName);
+                        var fileName = $"news_{Guid.NewGuid()}{Path.GetExtension(ImagemFile.FileName)}";
                         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/noticias", fileName);
                         
                         using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
                             await ImagemFile.CopyToAsync(stream);
-                        }
+                        
                         noticia.ImagemUrl = "/img/noticias/" + fileName;
                     }
 
-                    noticia.DataPublicacao = DateTime.Now;
                     _context.Noticias.Add(noticia);
                     await _context.SaveChangesAsync();
 
@@ -84,7 +96,11 @@ namespace PortalDMPlace.Controllers
                 }
             }
 
-            ViewBag.Campanhas = _context.Campanhas.ToList();
+            // Recarrega as campanhas permitidas em caso de erro
+            IQueryable<Campanha> campanhasQuery = _context.Campanhas;
+            if (!_user.IsAtLeastAdmin) campanhasQuery = campanhasQuery.Where(c => c.CriadorId == _user.Id);
+            ViewBag.Campanhas = await campanhasQuery.ToListAsync();
+            
             ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
             return View("~/Views/Admin/Noticias/Criar.cshtml", noticia);
         }
@@ -96,7 +112,14 @@ namespace PortalDMPlace.Controllers
             var noticia = await _context.Noticias.FindAsync(id);
             if (noticia == null) return NotFound();
 
-            ViewBag.Campanhas = _context.Campanhas.ToList();
+            // SOBERANIA: Bloqueia se tentar editar notícia de outro mestre
+            if (noticia.AccountId != _user.Id && !_user.IsAtLeastAdmin)
+                return Forbid();
+
+            IQueryable<Campanha> campanhasQuery = _context.Campanhas;
+            if (!_user.IsAtLeastAdmin) campanhasQuery = campanhasQuery.Where(c => c.CriadorId == _user.Id);
+
+            ViewBag.Campanhas = await campanhasQuery.ToListAsync();
             ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
             return View("~/Views/Admin/Noticias/Editar.cshtml", noticia);
         }
@@ -105,44 +128,51 @@ namespace PortalDMPlace.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(int id, Noticia noticia, IFormFile? ImagemFile)
         {
-            ModelState.Remove("ImagemUrl");
-            ModelState.Remove("Campanha");
-
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Campanhas = _context.Campanhas.ToList();
-                ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
-                return View("~/Views/Admin/Noticias/Editar.cshtml", noticia);
-            }
-
-            var noticiaExistente = await _context.Noticias.FindAsync(noticia.Id);
+            var noticiaExistente = await _context.Noticias.FindAsync(id);
             if (noticiaExistente == null) return NotFound();
 
-            if(id != noticia.Id) return BadRequest();
+            // SOBERANIA NO POST
+            if (noticiaExistente.AccountId != _user.Id && !_user.IsAtLeastAdmin)
+                return Forbid();
 
-            noticiaExistente.Titulo = noticia.Titulo;
-            noticiaExistente.Conteudo = noticia.Conteudo;
-            noticiaExistente.CampanhaId = noticia.CampanhaId;
-            noticiaExistente.Categoria = noticia.Categoria;
-            noticiaExistente.Autor = noticia.Autor;
+            ModelState.Remove("ImagemUrl");
+            ModelState.Remove("Campanha");
+            ModelState.Remove("AutorAccount");
 
-            if (ImagemFile != null && ImagemFile.Length > 0)
+            if (ModelState.IsValid)
             {
-                var fileName = Guid.NewGuid() + Path.GetExtension(ImagemFile.FileName);
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/noticias", fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                noticiaExistente.Titulo = noticia.Titulo;
+                noticiaExistente.Conteudo = noticia.Conteudo;
+                noticiaExistente.CampanhaId = noticia.CampanhaId;
+                noticiaExistente.Categoria = noticia.Categoria;
+                noticiaExistente.Autor = noticia.Autor;
+
+                if (ImagemFile != null && ImagemFile.Length > 0)
                 {
-                    await ImagemFile.CopyToAsync(stream);
+                    // Apaga a imagem antiga se não for a default
+                    if (!noticiaExistente.ImagemUrl.Contains("default.jpg"))
+                    {
+                        var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", noticiaExistente.ImagemUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                    }
+
+                    var fileName = $"news_{Guid.NewGuid()}{Path.GetExtension(ImagemFile.FileName)}";
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/noticias", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                        await ImagemFile.CopyToAsync(stream);
+                    
+                    noticiaExistente.ImagemUrl = "/img/noticias/" + fileName;
                 }
-                noticiaExistente.ImagemUrl = "/img/noticias/" + fileName;
+
+                await _context.SaveChangesAsync();
+                TempData["Sucesso"] = "Crônica reescrita com sucesso!";
+                return RedirectToAction(nameof(Index));
             }
 
-            await _context.SaveChangesAsync();
-            TempData["Sucesso"] = "Crônica reescrita com sucesso!";
-            return RedirectToAction(nameof(Index));
+            ViewBag.Campanhas = await _context.Campanhas.ToListAsync();
+            return View("~/Views/Admin/Noticias/Editar.cshtml", noticia);
         }
 
-        // GET: Admin/Noticias/Detalhes/5
         [HttpGet("Detalhes/{id}")]
         public async Task<IActionResult> Detalhes(int id)
         {
@@ -153,8 +183,8 @@ namespace PortalDMPlace.Controllers
 
             // Buscamos a notícia incluindo os dados da Campanha para o cabeçalho
             var noticia = await _context.Noticias
-                .Include(n => n.Campanha)
-                .FirstOrDefaultAsync(n => n.Id == id);
+            .Include(n => n.Campanha)
+            .FirstOrDefaultAsync(n => n.Id == id);
 
             if (noticia == null)
             {
@@ -164,21 +194,31 @@ namespace PortalDMPlace.Controllers
 
             // Definimos o título para a Topbar do LayoutAdmin
             ViewData["Title"] = "Visualizando Crônica";
-
             return View("~/Views/Admin/Noticias/Detalhes.cshtml", noticia);
         }
 
         // --- EXCLUSÃO ---
-        [HttpPost("Excluir/{id}")] // Melhor usar Post para exclusão por segurança
+        [HttpPost("Excluir/{id}")]
         public async Task<IActionResult> Excluir(int id)
         {
             var noticia = await _context.Noticias.FindAsync(id);
-            if (noticia != null)
+            if (noticia == null) return NotFound();
+
+            // SOBERANIA: Só o dono ou Admin apaga
+            if (noticia.AccountId != _user.Id && !_user.IsAtLeastAdmin)
+                return Forbid();
+
+            // Apaga a imagem associada
+            if (!noticia.ImagemUrl.Contains("default.jpg"))
             {
-                _context.Noticias.Remove(noticia);
-                await _context.SaveChangesAsync();
-                TempData["Sucesso"] = "Crônica apagada da história.";
+                var imgPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", noticia.ImagemUrl.TrimStart('/'));
+                if (System.IO.File.Exists(imgPath)) System.IO.File.Delete(imgPath);
             }
+
+            _context.Noticias.Remove(noticia);
+            await _context.SaveChangesAsync();
+            TempData["Sucesso"] = "Crônica apagada da história.";
+            
             return RedirectToAction(nameof(Index));
         }
 

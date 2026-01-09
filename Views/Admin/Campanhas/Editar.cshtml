@@ -10,7 +10,7 @@
             <h2 class="text-warning"><i class="bi bi-pencil-square me-2"></i> Editar Essência do Mundo</h2>
             <p class="text-white-50">Gerencie os dados básicos e a identidade visual de <strong>@Model.Name</strong></p>
         </div>
-        <a asp-action="IndexAdmin" class="btn btn-outline-secondary">
+        <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Voltar
         </a>
     </div>
@@ -114,8 +114,8 @@
                         <input asp-for="DiscordWebhookUrl" class="form-control bg-dark text-white border-secondary" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-white-50 small">LINK FOUNDRY VTT</label>
-                        <input asp-for="FoundryUrl" class="form-control bg-dark text-white border-secondary" />
+                        <label class="form-label fw-bold text-white-50 small">LINK VTT(Roll20, FoundryVTT, etc...)</label>
+                        <input asp-for="VttUrl" class="form-control bg-dark text-white border-secondary" />
                     </div>
                 </div>
             </div>

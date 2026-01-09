@@ -6,46 +6,76 @@
 
 <div class="login-card">
     <div class="text-center mb-4">
-        <i class="bi bi-dice-5 dm-logo-icon"></i>
-        <h2 class="text-warning fw-bold mb-1">Painel do GM</h2>
-        <p class="text-muted small">Identifique-se para gerenciar as crônicas</p>
+        <div class="logo-wrapper mb-3">
+            <i class="bi bi-dice-5-fill dm-logo-icon"></i>
+            <div class="logo-glow"></div>
+        </div>
+        <h2 class="text-warning fw-bold mb-1" style="font-family: 'Cinzel', serif; letter-spacing: 1px;">Painel do GM</h2>
+        <p class="text-muted small">Proporcione sua linhagem para gerenciar os mundos</p>
     </div>
 
     @if (ViewBag.Erro != null)
     {
-        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger text-danger small py-2 mb-4">
+        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger text-danger small py-2 mb-4 animate__animated animate__shakeX">
             <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Erro
         </div>
     }
 
-    <form asp-action="Login" method="post">
+    <form asp-action="Login" method="post" autocomplete="off">
         @Html.AntiForgeryToken()
 
         <div class="mb-3">
-            <label asp-for="Username" class="form-label text-warning small fw-bold text-uppercase" style="letter-spacing: 1px;">Usuário</label>
-            <input asp-for="Username" class="form-control" placeholder="Seu nome de mestre" required autofocus />
+            <label asp-for="Username" class="form-label text-warning small fw-bold text-uppercase">Usuário</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-person-fill"></i>
+                </span>
+                <input asp-for="Username" class="form-control" placeholder="Seu nome de mestre" required autofocus />
+            </div>
         </div>
 
         <div class="mb-4">
-            <label asp-for="Password" class="form-label text-warning small fw-bold text-uppercase" style="letter-spacing: 1px;">Senha</label>
-            <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" required />
+            <label asp-for="Password" class="form-label text-warning small fw-bold text-uppercase">Senha Arcano</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-key-fill"></i>
+                </span>
+                <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" required />
+            </div>
         </div>
 
         <div class="d-grid gap-3">
-            <button type="submit" class="btn btn-warning fw-bold">
-                <i class="bi bi-shield-lock me-2"></i> Entrar no Portal
+            <button type="submit" class="btn btn-warning fw-bold py-3 shadow-sm">
+                <i class="bi bi-shield-lock-fill me-2"></i> Atravessar Portal
             </button>
-            <a class="btn btn-outline-secondary btn-sm border-0" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-arrow-left me-1"></i> Voltar ao Site
-            </a>
+            
+            <div class="text-center py-2">
+                <div class="d-flex align-items-center mb-3">
+                    <hr class="flex-grow-1 border-secondary opacity-25">
+                    <span class="mx-3 text-muted smaller">Novo Mestre?</span>
+                    <hr class="flex-grow-1 border-secondary opacity-25">
+                </div>
+                
+                <a class="btn btn-outline-warning btn-sm w-100 py-2 border-opacity-50" asp-action="Register">
+                    <i class="bi bi-person-plus-fill me-1"></i> Forjar Nova Identidade
+                </a>
+            </div>
         </div>
     </form>
-    
-    <div class="text-center mt-5 pt-3 border-top border-secondary border-opacity-10">
-        <span class="text-muted smaller">© 2026 Portal DM Place</span>
-    </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<style>
+    .logo-wrapper { position: relative; display: inline-block; }
+    .logo-glow {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px; height: 60px;
+        background: var(--dm-gold);
+        filter: blur(40px);
+        opacity: 0.2;
+        z-index: -1;
+    }
+    .input-group-text { border-right: none !important; border-radius: 12px 0 0 12px !important; }
+    .form-control { border-left: none !important; border-radius: 0 12px 12px 0 !important; }
+    .smaller { font-size: 0.75rem; }
+</style>

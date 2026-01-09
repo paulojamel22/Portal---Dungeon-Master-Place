@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PortalDMPlace.Models;
 
@@ -10,9 +11,11 @@ using PortalDMPlace.Models;
 namespace PortalDMPlace.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260104221333_AccountTableUpdate")]
+    partial class AccountTableUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -66,9 +69,6 @@ namespace PortalDMPlace.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CriadorId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -83,36 +83,13 @@ namespace PortalDMPlace.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CriadorId");
-
                     b.ToTable("Campanhas");
-                });
-
-            modelBuilder.Entity("PortalDMPlace.Models.GlobalSettings", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("ManutencaoAtiva")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("MensagemManutencao")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("GlobalSettings");
                 });
 
             modelBuilder.Entity("PortalDMPlace.Models.Noticia", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("AccountId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Autor")
@@ -142,8 +119,6 @@ namespace PortalDMPlace.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
 
                     b.HasIndex("CampanhaId");
 
@@ -179,15 +154,15 @@ namespace PortalDMPlace.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FoundryUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("TemaCorPrimaria")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TemaCorSecundaria")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("VttUrl")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -199,32 +174,13 @@ namespace PortalDMPlace.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("PortalDMPlace.Models.Campanha", b =>
-                {
-                    b.HasOne("PortalDMPlace.Models.Account", "Criador")
-                        .WithMany()
-                        .HasForeignKey("CriadorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Criador");
-                });
-
             modelBuilder.Entity("PortalDMPlace.Models.Noticia", b =>
                 {
-                    b.HasOne("PortalDMPlace.Models.Account", "AutorAccount")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("PortalDMPlace.Models.Campanha", "Campanha")
                         .WithMany()
                         .HasForeignKey("CampanhaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AutorAccount");
 
                     b.Navigation("Campanha");
                 });

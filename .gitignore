@@ -491,12 +491,14 @@ wwwroot/img/banners/*
 wwwroot/img/noticias/*
 wwwroot/img/campanhas/*
 wwwroot/img/thumbnails/*
+wwwroot/img/profiles/*
 
 # --- EXCEÇÕES: Não ignorar as imagens default ---
 !wwwroot/img/banners/default.png
 !wwwroot/img/noticias/default.png
 !wwwroot/img/campanhas/default.png
 !wwwroot/img/thumbnails/default.png
+!wwwroot/img/profiles/default.png
 
 # Caso queira garantir que a pasta exista no servidor mas vazia, 
 # podemos ignorar tudo exceto um arquivo .gitkeep
@@ -505,3 +507,4 @@ wwwroot/img/thumbnails/*
 !wwwroot/img/noticias/.gitkeep
 !wwwroot/img/campanhas/.gitkeep
 !wwwroot/img/thumbnails/.gitkeep
+!wwwroot/img/profiles/.gitkeep

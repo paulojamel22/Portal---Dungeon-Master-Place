@@ -7,69 +7,80 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Acesso Restrito</title>
+    <title>@ViewData["Title"] - DM Place</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --dm-gold: #ffc107;
-            --dm-dark-bg: #0a0a0a;
-            --dm-card-bg: #141414;
-            --dm-accent: #8e0000; /* Um toque de vermelho escuro para drama */
+            --dm-dark-bg: #050505;
+            --dm-card-bg: rgba(20, 20, 20, 0.95);
+            --dm-accent: #8e0000;
         }
 
         body {
-            /* Fundo com imagem de portal desfocada ao fundo ou gradiente profundo */
-            background: radial-gradient(circle at center, #1a1a1a 0%, var(--dm-dark-bg) 100%);
+            /* Fundo Animado de Nebulosa (Puro CSS) */
+            background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, var(--dm-dark-bg) 100%);
             color: #f1f1f1;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Container de Login com Aura */
+        /* Camada de profundidade para o fundo */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png'); /* Estrelas leves */
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
         .login-card-container {
             width: 100%;
             max-width: 420px;
             padding: 20px;
-            animation: fadeIn 0.8s ease-out;
-            z-index: 2;
+            animation: fadeInEntrance 1s ease-out;
+            z-index: 10;
         }
 
         .login-card {
             background-color: var(--dm-card-bg);
-            border: 1px solid rgba(255, 193, 7, 0.15);
-            border-radius: 20px;
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 24px;
             padding: 40px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8), 
-                        0 0 30px rgba(255, 193, 7, 0.03);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 
+                        0 0 40px rgba(255, 193, 7, 0.05);
+            backdrop-filter: blur(15px); /* Efeito Frosted Glass */
         }
 
-        /* Estilização de Inputs */
-        .form-control {
-            background-color: #080808 !important;
-            border: 1px solid #2a2a2a !important;
+        /* Estilização de Inputs (Unificada com o Login.cshtml) */
+        .form-control, .form-select {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: #fff !important;
             padding: 12px 15px;
             border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
         }
 
         .form-control:focus {
             border-color: var(--dm-gold) !important;
-            box-shadow: 0 0 12px rgba(255, 193, 7, 0.2) !important;
-            background-color: #0f0f0f !important;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.15) !important;
+            background-color: rgba(0, 0, 0, 0.8) !important;
         }
 
         .btn-warning {
-            background: linear-gradient(135deg, var(--dm-gold) 0%, #eab000 100%);
+            background: linear-gradient(135deg, var(--dm-gold) 0%, #d4a000 100%);
             border: none;
             color: #000;
             font-weight: 800;
@@ -77,53 +88,47 @@
             border-radius: 12px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            transition: 0.4s;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .btn-warning:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
-            filter: brightness(1.1);
-        }
-
-        /* Efeito de Partículas ou Overlay */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/dark-matter.png');
-            opacity: 0.3;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        @@keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.4);
         }
 
         .dm-logo-icon {
             font-size: 3.5rem;
             color: var(--dm-gold);
-            margin-bottom: 15px;
-            display: block;
-            text-align: center;
-            filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.5));
+            filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.6));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @@keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @@keyframes fadeInEntrance {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .text-muted { color: #888 !important; }
+        .smaller { font-size: 0.75rem; }
         
         .btn-back {
-            color: #666;
+            color: #777;
             text-decoration: none;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-back:hover { color: var(--dm-gold); }
+        .btn-back:hover { color: var(--dm-gold); transform: translateX(-5px); }
     </style>
 </head>
 <body>
-
-    <div class="overlay"></div>
 
     <div class="login-card-container">
         @RenderBody()
@@ -133,7 +138,8 @@
                 <i class="bi bi-arrow-left"></i> Voltar ao Multiverso
             </a>
             <p class="text-muted smaller mt-3">
-                <i class="bi bi-shield-lock-fill text-warning"></i> Sessão Protegida - DM Place v2.0
+                <i class="bi bi-shield-lock-fill text-warning me-1"></i> 
+                Acesso Criptografado • Portal DM Place 2026
             </p>
         </div>
     </div>

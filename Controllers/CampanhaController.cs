@@ -7,33 +7,25 @@ using PortalDMPlace.Models.ViewModels;
 
 namespace PortalDMPlace.Controllers
 {
-    public class CampanhaController(DataContext context) : Controller
+    public class CampanhaController(DataContext context, AccountObject user) : Controller
     {
         private readonly DataContext _context = context;
+        private readonly AccountObject _user = user;
         HelpersFunctions Helpers => new(_context);
 
-        // Rota principal da Campanha (ex: portal.com.br/Aetheria)
-        [HttpGet("C/{slug}")] //C/{prefixo}/Noticias
+        // --- ÁREA PÚBLICA (VISITANTES) ---
+
+        [HttpGet("C/{slug}")]
         public async Task<IActionResult> Noticias(string slug, int page = 1, string? categoria = null)
         {
-            // Lista de nomes que o slug NUNCA pode assumir
-            string[] reserved = ["admin", "home", "login", "css", "js", "img"];
-            if (reserved.Contains(slug.ToLower()))
-            {
-                // Se cair aqui, ele ignora e o ASP.NET tenta achar o controller físico
-                return NotFound(); 
-            }
-
-            // 1. Identifica a Campanha pelo NomeSimples (Slug)
             var campanha = await _context.Campanhas
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.NomeSimples.ToLower() == slug.ToLower());
 
             if (campanha == null) return RedirectToAction("Index", "Home");
 
-            // 2. Busca as Configurações Visuais (Settings) usando seu Helper
             var settings = await Helpers.GetSettingsAsync(campanha.Id);
 
-            // 3. Lógica de Notícias (unificada dos seus dois controllers)
             int noticiasPorPagina = 6;
             var query = _context.Noticias
                 .Where(n => n.CampanhaId == campanha.Id)
@@ -49,7 +41,6 @@ namespace PortalDMPlace.Controllers
                 .Take(noticiasPorPagina)
                 .ToListAsync();
 
-            // 4. Metadados para a View Dinâmica
             ViewBag.Settings = settings;
             ViewBag.Campanha = campanha;
             ViewBag.Page = page;
@@ -57,33 +48,45 @@ namespace PortalDMPlace.Controllers
             ViewBag.CategoriaAtual = categoria;
             ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
 
-            // Retornamos a View genérica que servirá para todas as campanhas
             return View(noticias);
         }
 
-        // Detalhes da Notícia (ex: portal.com.br/Aetheria/Detalhes/15)
-        [HttpGet("{slug}/Detalhes/{id}")]
+        // --- DETALHES DA CRÔNICA (PÚBLICO) ---
+        [HttpGet("C/{slug}/{id}")]
         public async Task<IActionResult> Detalhes(string slug, int id)
         {
-            var campanha = await _context.Campanhas
-                .FirstOrDefaultAsync(c => c.NomeSimples.ToLower() == slug.ToLower());
-
-            if (campanha == null || id <= 0) return NotFound();
-
+            // Busca a notícia incluindo a campanha para garantir que pertence ao mundo certo
             var noticia = await _context.Noticias
                 .Include(n => n.Campanha)
-                .FirstOrDefaultAsync(n => n.Id == id && n.CampanhaId == campanha.Id);
+                .FirstOrDefaultAsync(n => n.Id == id && n.Campanha.NomeSimples.ToLower() == slug.ToLower());
 
-            if (noticia == null) return RedirectToAction(nameof(Index), new { slug });
+            if (noticia == null) return NotFound();
 
-            // Carregamos os settings também para os detalhes terem as cores certas
-            ViewBag.Settings = await Helpers.GetSettingsAsync(campanha.Id);
-            ViewBag.Campanha = campanha;
+            // Busca as configurações visuais do mundo
+            var settings = await Helpers.GetSettingsAsync(noticia.CampanhaId);
 
+            ViewBag.Settings = settings;
+            ViewBag.Campanha = noticia.Campanha;
+
+            // Retorna a view Detalhes.cshtml que revisamos anteriormente
             return View(noticia);
         }
 
-        // GET: Admin/Campanhas/Editar/5
+        // --- ÁREA ADMINISTRATIVA (MESTRES/ADMINS) ---
+
+        [Authorize]
+        [HttpGet("C/Campanhas")] // Central de Mundos
+        public async Task<IActionResult> Index()
+        {
+            IQueryable<Campanha> query = _context.Campanhas.AsNoTracking();
+
+            if (!_user.IsAtLeastAdmin) 
+                query = query.Where(c => c.CriadorId == _user.Id);
+
+            var campanhas = await query.ToListAsync();
+            return View("~/Views/Admin/Campanhas/Index.cshtml", campanhas);
+        }
+
         [Authorize]
         [HttpGet("Admin/Campanhas/Editar/{id}")]
         public async Task<IActionResult> Editar(int id)
@@ -91,13 +94,17 @@ namespace PortalDMPlace.Controllers
             var campanha = await _context.Campanhas.FindAsync(id);
             if (campanha == null) return NotFound();
 
+            // SOBERANIA: Validar se é o dono
+            if (campanha.CriadorId != _user.Id && !_user.IsAtLeastAdmin)
+                return Forbid();
+
             var settings = await _context.Settings.FirstOrDefaultAsync(s => s.CampanhaId == id) 
                         ?? new Settings { CampanhaId = id };
 
-            // Montamos o ViewModel para a View Unificada
             var viewModel = new CampanhaSettingsViewModel
             {
                 CampanhaId = campanha.Id,
+                CriadorId = campanha.CriadorId,
                 Name = campanha.Name,
                 NomeSimples = campanha.NomeSimples,
                 Description = campanha.Description,
@@ -109,13 +116,12 @@ namespace PortalDMPlace.Controllers
                 ChamadaCard = settings.ChamadaCard,
                 FonteFamilia = settings.FonteFamilia,
                 DiscordWebhookUrl = settings.DiscordWebhookUrl,
-                FoundryUrl = settings.FoundryUrl
+                VttUrl = settings.VttUrl
             };
 
             return View("~/Views/Admin/Campanhas/Editar.cshtml", viewModel);
         }
 
-        // POST: Admin/Campanhas/Editar/5
         [Authorize]
         [HttpPost("Admin/Campanhas/Editar/{id}")]
         [ValidateAntiForgeryToken]
@@ -123,59 +129,47 @@ namespace PortalDMPlace.Controllers
         {
             if (id != model.CampanhaId) return BadRequest();
 
-            if (!ModelState.IsValid) 
-                return View("~/Views/Admin/Campanhas/Editar.cshtml", model);
+            // SOBERANIA NO POST: Busca a campanha do banco para validar o dono real
+            var dbCampanha = await _context.Campanhas.FindAsync(id);
+            if (dbCampanha == null) return NotFound();
+            
+            if (dbCampanha.CriadorId != _user.Id && !_user.IsAtLeastAdmin)
+                return Forbid();
+
+            if (!ModelState.IsValid) return View("~/Views/Admin/Campanhas/Editar.cshtml", model);
 
             try
             {
-                var dbCampanha = await _context.Campanhas.FindAsync(id);
                 var dbSettings = await _context.Settings.FirstOrDefaultAsync(s => s.CampanhaId == id);
-
-                if (dbCampanha == null) return NotFound();
-
-                // 1. Atualiza Dados Básicos da Campanha
-                dbCampanha.Name = model.Name;
-                dbCampanha.NomeSimples = model.NomeSimples;
-                dbCampanha.Description = model.Description ?? "";
-
-                // 2. Garante que Settings existam
                 if (dbSettings == null)
                 {
                     dbSettings = new Settings { CampanhaId = id };
                     _context.Settings.Add(dbSettings);
                 }
 
-                // 3. Processamento de Imagens (Seu código de upload aprimorado)
+                dbCampanha.Name = model.Name;
+                dbCampanha.NomeSimples = model.NomeSimples;
+                dbCampanha.Description = model.Description ?? "";
+
+                // --- UPLOAD REFINADO ---
                 string uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/campanhas");
                 if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
 
-                if (bannerFile != null && bannerFile.Length > 0)
-                {
-                    string fileName = $"banner_{id}_{Guid.NewGuid()}{Path.GetExtension(bannerFile.FileName)}";
-                    using (var stream = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create))
-                        await bannerFile.CopyToAsync(stream);
-                    dbSettings.BannerUrl = $"/img/campanhas/{fileName}";
-                }
+                if (bannerFile?.Length > 0)
+                    dbSettings.BannerUrl = await HandleFileUpload(bannerFile, "banner", id, dbSettings.BannerUrl);
 
-                if (thumbFile != null && thumbFile.Length > 0)
-                {
-                    string fileName = $"thumb_{id}_{Guid.NewGuid()}{Path.GetExtension(thumbFile.FileName)}";
-                    using (var stream = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create))
-                        await thumbFile.CopyToAsync(stream);
-                    dbSettings.CardThumbnailUrl = $"/img/campanhas/{fileName}";
-                }
+                if (thumbFile?.Length > 0)
+                    dbSettings.CardThumbnailUrl = await HandleFileUpload(thumbFile, "thumb", id, dbSettings.CardThumbnailUrl);
 
-                // 4. Atualiza Identidade e Integrações
                 dbSettings.TemaCorPrimaria = model.TemaCorPrimaria ?? "#ffc107";
                 dbSettings.TemaCorSecundaria = model.TemaCorSecundaria ?? "#6c757d";
-                dbSettings.ChamadaCard = model.ChamadaCard ?? "Bem-vindo ao portal da campanha!";
+                dbSettings.ChamadaCard = model.ChamadaCard ?? "Bem-vindo ao portal!";
                 dbSettings.FonteFamilia = model.FonteFamilia ?? "'Segoe UI', sans-serif";
                 dbSettings.DiscordWebhookUrl = model.DiscordWebhookUrl ?? "";
-                dbSettings.FoundryUrl = model.FoundryUrl ?? "";
+                dbSettings.VttUrl = model.VttUrl ?? "";
 
                 await _context.SaveChangesAsync();
-                TempData["Sucesso"] = "A essência do mundo foi moldada com sucesso!";
-                
+                TempData["Sucesso"] = "A essência do mundo foi moldada!";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -183,6 +177,27 @@ namespace PortalDMPlace.Controllers
                 ModelState.AddModelError("", "Erro ao salvar a realidade: " + ex.Message);
                 return View("~/Views/Admin/Campanhas/Editar.cshtml", model);
             }
+        }
+
+        // Helper Privado para Processar Uploads e Limpar Antigos
+        private static async Task<string> HandleFileUpload(IFormFile file, string prefix, int id, string? currentUrl)
+        {
+            string uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/campanhas");
+            
+            // Apaga o antigo se existir e não for padrão
+            if (!string.IsNullOrEmpty(currentUrl) && !currentUrl.Contains("default.png"))
+            {
+                string oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", currentUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+            }
+
+            string fileName = $"{prefix}_{id}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            string filePath = Path.Combine(uploadDir, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await file.CopyToAsync(stream);
+
+            return $"/img/campanhas/{fileName}";
         }
 
         [HttpPost]
@@ -234,19 +249,6 @@ namespace PortalDMPlace.Controllers
             return Json(new { success = false, message = "Erro ao enviar sinal. Verifique a URL." });
         }
 
-        [HttpGet("C/Campanhas")]
-        public IActionResult Index()
-        {
-            var campanhas = _context.Campanhas.ToList();
-
-            if (campanhas == null || campanhas.Count == 0)
-            {
-                TempData["Info"] = "Nenhuma campanha encontrada. Crie uma nova campanha.";
-            }
-
-            return View("~/Views/Admin/Campanhas/Index.cshtml", campanhas);
-        }
-
         [HttpGet("Admin/Campanhas/Criar")]
         public IActionResult Criar()
         {
@@ -259,6 +261,8 @@ namespace PortalDMPlace.Controllers
         {
             if (ModelState.IsValid)
             {
+                model.CriadorId = _user.Id; // Define o Criador como o usuário atual
+
                 _context.Campanhas.Add(model);
                 await _context.SaveChangesAsync();
                 
@@ -279,7 +283,14 @@ namespace PortalDMPlace.Controllers
         public IActionResult DeletarCampanha(int id)
         {
             var campanha = _context.Campanhas.Find(id);
+
             if (campanha == null) return NotFound();
+
+            // Se não for o dono e não for Admin, acesso negado
+            if (campanha.CriadorId != _user.Id && !_user.IsAtLeastAdmin)
+            {
+                return Forbid(); // Ou redireciona com erro
+            }
 
             return View("~/Views/Admin/Campanhas/Deletar.cshtml", campanha);
         }

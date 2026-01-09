@@ -1,97 +1,151 @@
+@using PortalDMPlace.Enumerators
 @model IEnumerable<PortalDMPlace.Models.Noticia>
+@inject PortalDMPlace.Functions.AccountObject CurrentUser
 @{
-    ViewData["Title"] = "Painel de Controle";
+    ViewData["Title"] = "Dashboard";
     Layout = "_LayoutAdmin";
+    bool isAdmin = CurrentUser.IsAtLeastAdmin;
 }
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="text-warning fw-bold mb-0">Saudações, Mestre @User.Identity?.Name!</h2>
-            <p class="text-muted">O destino de seus mundos está em suas mãos.</p>
+<div class="container-fluid py-2">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h2 class="text-warning fw-bold mb-1" style="font-family: 'Cinzel', serif; letter-spacing: 1px;">
+                Saudações, @(isAdmin ? "Soberano" : "Mestre") @CurrentUser.Name!
+            </h2>
+            <p class="text-muted mb-0 shadow-sm">
+                <i class="bi bi-shield-check text-success me-2"></i>
+                @(isAdmin ? "Visão global de todos os mundos e crônicas do portal." : "Gerencie suas crônicas e detalhe suas aventuras.")
+            </p>
         </div>
-        <div class="text-end">
-            <span class="badge bg-dark border border-secondary p-2">
-                <i class="bi bi-clock-history me-1 text-warning"></i> @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
-            </span>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="d-inline-flex align-items-center bg-black bg-opacity-50 border border-secondary border-opacity-25 rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-calendar-event me-2 text-warning"></i>
+                <span class="small fw-bold text-white-50">@DateTime.Now.ToString("dd 'de' MMMM, yyyy")</span>
+            </div>
         </div>
     </div>
 
     <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);">
-                <div class="card-body p-4 border-start border-4 border-warning rounded">
-                    <div class="d-flex justify-content-between align-items-center">
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card stat-warning h-100 shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="text-light text-uppercase small fw-bold mb-2">Campanhas Ativas</h6>
-                            <h2 class="mb-0 fw-bold text-white">@ViewBag.TotalCampanhas</h2>
+                            <p class="stat-label mb-1">@(isAdmin ? "Total de Mundos" : "Meus Mundos")</p>
+                            <h2 class="stat-value mb-0">@ViewBag.TotalCampanhas</h2>
                         </div>
-                        <i class="bi bi-map fs-1 text-warning opacity-75"></i>
+                        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-globe-americas"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a asp-controller="Campanha" asp-action="Index" class="stat-link text-warning">
+                            Ver detalhes <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);">
-                <div class="card-body p-4 border-start border-4 border-info rounded">
-                    <div class="d-flex justify-content-between align-items-center">
+        
+        <div class="col-xl-4 col-md-6">
+            <div class="stat-card stat-info h-100 shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="text-light text-uppercase small fw-bold">Crônicas Registradas</h6>
-                            <h2 class="mb-0 fw-bold text-white">@ViewBag.TotalNoticias</h2>
+                            <p class="stat-label mb-1">@(isAdmin ? "Crônicas Globais" : "Minhas Crônicas")</p>
+                            <h2 class="stat-value mb-0">@ViewBag.TotalNoticias</h2>
                         </div>
-                        <i class="bi bi-journal-text fs-1 text-info opacity-50"></i>
+                        <div class="stat-icon bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-journal-richtext"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a asp-controller="Noticia" asp-action="Index" class="stat-link text-info">
+                            Ver crônicas <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);">
-                <div class="card-body p-4 border-start border-4 border-success rounded">
-                    <div class="d-flex justify-content-between align-items-center">
+
+        <div class="col-xl-4 col-md-12">
+            <div class="stat-card stat-success h-100 shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="text-light text-uppercase small fw-bold">Acesso ao Foundry</h6>
-                            <p class="mb-0 small text-light">Sistemas Online</p>
+                            <p class="stat-label mb-1">FOUNDRY VTT</p>
+                            <h2 class="stat-value mb-0">Ativo</h2>
+                            <div class="d-flex align-items-center mt-2">
+                                <span class="pulse-dot me-2"></span>
+                                <span class="small text-success fw-bold">Online no Ubuntu</span>
+                            </div>
                         </div>
-                        <i class="bi bi-cpu fs-1 text-success opacity-50"></i>
+                        <div class="stat-icon bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-cpu"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card bg-dark border-secondary">
-        <div class="card-header border-secondary d-flex justify-content-between align-items-center py-3">
-            <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-lightning-charge me-2"></i> Notícias Recentes</h5>
-            <a asp-controller="Noticia" asp-action="Criar" class="btn btn-sm btn-warning fw-bold">
-                <i class="bi bi-plus-lg"></i> Nova Notícia
+    <div class="card bg-dark border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-black bg-opacity-50 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center py-3 px-4">
+            <h5 class="mb-0 fw-bold text-warning" style="font-family: 'Cinzel', serif;">
+                <i class="bi bi-clock-history me-2"></i> @(isAdmin ? "Últimas Atualizações do Reino" : "Minhas Atualizações")
+            </h5>
+            <a asp-controller="Noticia" asp-action="Criar" class="btn btn-warning btn-sm fw-bold px-3">
+                <i class="bi bi-plus-lg me-1"></i> Nova Crônica
             </a>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0 align-middle">
-                    <thead class="bg-black">
-                        <tr class="text-light small">
-                            <th class="ps-4">TÍTULO</th>
-                            <th>CAMPANHA</th>
-                            <th>DATA</th>
-                            <th class="text-end pe-4">AÇÕES</th>
+                <table class="table table-dark table-hover mb-0 align-middle border-0">
+                    <thead class="bg-black text-muted">
+                        <tr class="small text-uppercase" style="letter-spacing: 1px;">
+                            <th class="ps-4 py-3">Crônica</th>
+                            <th>Mundo / Campanha</th>
+                            @if(isAdmin) { <th>Autor</th> }
+                            <th>Data</th>
+                            <th class="text-end pe-4">Gestão</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="border-top-0">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="@(isAdmin ? 5 : 4)" class="text-center py-5 text-muted">
+                                    <i class="bi bi-journal-x fs-2 d-block mb-2"></i>
+                                    Nenhuma crônica registrada sob seu comando.
+                                </td>
+                            </tr>
+                        }
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-bold">@item.Titulo</td>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-white">@item.Titulo</div>
+                                    <small class="text-muted">@item.Categoria</small>
+                                </td>
                                 <td>
-                                    <span class="badge bg-secondary border border-light border-opacity-25">
-                                        @item.Campanha?.Name
+                                    <span class="badge rounded-pill bg-dark border border-secondary px-3 py-2" style="font-size: 0.75rem;">
+                                        <i class="bi bi-shield-fill text-info me-1"></i> @(item.Campanha?.Name ?? "Sem Mundo")
                                     </span>
                                 </td>
-                                <td class="text-light small">@item.DataPublicacao.ToString("dd/MM/yy")</td>
+                                @if(isAdmin) {
+                                    <td class="small fw-bold">@item.Autor</td>
+                                }
+                                <td class="text-white-50 small">@item.DataPublicacao.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td class="text-end pe-4">
-                                    <a asp-controller="Noticia" asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <div class="btn-group">
+                                        <a asp-controller="Noticia" asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-light" title="Ver">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-controller="Noticia" asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -101,3 +155,46 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Estilos de Card com Efeito de Cor Lateral */
+    .stat-card {
+        background: #1a1a1a;
+        border-radius: 12px;
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    
+    .stat-warning { border-left: 5px solid var(--bs-warning); }
+    .stat-info { border-left: 5px solid var(--bs-info); }
+    .stat-success { border-left: 5px solid var(--bs-success); }
+
+    .stat-label { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: #fff; }
+    
+    .stat-icon {
+        width: 50px; height: 50px; display: flex; align-items: center; 
+        justify-content: center; border-radius: 12px; font-size: 1.5rem;
+    }
+
+    .stat-link { text-decoration: none; font-size: 0.8rem; font-weight: 600; opacity: 0.8; }
+    .stat-link:hover { opacity: 1; text-decoration: underline; }
+
+    /* Efeito de Pulso para o Status Online */
+    .pulse-dot {
+        width: 8px; height: 8px; background-color: var(--bs-success);
+        border-radius: 50%; box-shadow: 0 0 0 rgba(25, 135, 84, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+    }
+
+    /* Ajuste da Tabela */
+    .table thead th { border: none; }
+    .table tbody td { border-bottom: 1px solid rgba(255,255,255,0.03); padding: 15px 0; }
+    .table-hover tbody tr:hover { background-color: rgba(255, 193, 7, 0.02) !important; }
+</style>

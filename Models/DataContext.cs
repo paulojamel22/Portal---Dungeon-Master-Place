@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PortalDMPlace.Enumerators;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
@@ -11,26 +12,55 @@ namespace PortalDMPlace.Models
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Campanha> Campanhas { get; set; }
         public DbSet<Settings> Settings { get; set; }
+        public DbSet<GlobalSettings> GlobalSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Garante que cada campanha tenha apenas uma configuração ativa
-            modelBuilder.Entity<Settings>().HasIndex(s => s.CampanhaId).IsUnique();
+            // --- Relacionamentos de Campanha ---
             
-            // Configura o relacionamento 1:1 entre Campanha e Settings
+            // Garante que cada campanha tenha apenas uma configuração ativa (1:1)
+            modelBuilder.Entity<Settings>().HasIndex(s => s.CampanhaId).IsUnique();
             modelBuilder.Entity<Campanha>()
                 .HasOne(c => c.Settings)
                 .WithOne()
                 .HasForeignKey<Settings>(s => s.CampanhaId);
+
+            // Relacionamento Campanha -> Criador (Dono)
+            modelBuilder.Entity<Campanha>()
+                .HasOne(c => c.Criador)
+                .WithMany()
+                .HasForeignKey(c => c.CriadorId)
+                .OnDelete(DeleteBehavior.Restrict); // Não apaga o mestre se apagar a campanha
+
+            // --- Relacionamentos de Noticia ---
+
+            // Relacionamento Noticia -> Autor
+            modelBuilder.Entity<Noticia>()
+                .HasOne(n => n.AutorAccount)
+                .WithMany()
+                .HasForeignKey(n => n.AccountId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relacionamento Noticia -> Campanha
+            modelBuilder.Entity<Noticia>()
+                .HasOne(n => n.Campanha)
+                .WithMany()
+                .HasForeignKey(n => n.CampanhaId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 
     public partial class Noticia
     {
         public int Id { get; set; }
+        
+        public int AccountId { get; set; } // ID do autor (Chave Estrangeira)
+        [ForeignKey("AccountId")]
+        public virtual Account? AutorAccount { get; set; }
+
         public string Titulo { get; set; } = string.Empty;
         public string Conteudo { get; set; } = string.Empty;
-        public string Autor { get; set; } = "Mestre";
+        public string Autor { get; set; } = "Mestre"; // Nome amigável para exibição rápida
         public DateTime DataPublicacao { get; set; } = DateTime.Now;
         public string Categoria { get; set; } = "Atualização";
         public string ImagemUrl { get; set; } = "./img/noticias/default.jpg";
@@ -55,22 +85,28 @@ namespace PortalDMPlace.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty; // Senha em texto (cuidado!)
+        public string Password { get; set; } = string.Empty; 
         public string HashPassword { get; set; } = string.Empty;
-        public int CampanhaId { get; set; }
+        public string ProfileImageUrl { get; set; } = "/img/profiles/default.png";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime BirthDate { get; set; } = DateTime.Now.AddYears(-18);
+        public AccountType AccountType { get; set; } = AccountType.Player;
+        public int CampanhaId { get; set; } // Campanha principal vinculada
     }
 
     public class Campanha
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string NomeSimples { get; set; } = string.Empty; // Ex: "Aetheria", "Desafio"
+        public string NomeSimples { get; set; } = string.Empty; 
         public string Description { get; set; } = string.Empty;
         
-        // Atalho para facilitar o uso nas Views sem precisar de joins complexos
         public virtual Settings? Settings { get; set; }
 
-        // Helper para as views que criamos
+        public int CriadorId { get; set; } // Chave Estrangeira do Mestre
+        [ForeignKey("CriadorId")]
+        public virtual Account? Criador { get; set; }
+
         [NotMapped]
         public string DiscordWebhookUrl => Settings?.DiscordWebhookUrl ?? string.Empty;
     }
@@ -79,22 +115,22 @@ namespace PortalDMPlace.Models
     {
         public int Id { get; set; }
         public int CampanhaId { get; set; }
-        
-        // Webhooks e Integrações
         public string DiscordWebhookUrl { get; set; } = string.Empty;
-        public string FoundryUrl { get; set; } = "https://rpg.dmplace.com.br";
-
-        // --- CUSTOMIZAÇÃO VISUAL ---
+        public string VttUrl { get; set; } = "SeuServidorVTTAqui";
         public string TemaCorPrimaria { get; set; } = "#8e0000"; 
         public string TemaCorSecundaria { get; set; } = "#3a0000";
         public string FonteFamilia { get; set; } = "'Segoe UI', sans-serif";
-        
-        // Imagens dinâmicas
         public string? BannerUrl { get; set; } = "/img/banners/default.png";
         public string? CardThumbnailUrl { get; set; } = "/img/thumbnails/default.png";
-
-        // --- TEXTOS DINÂMICOS DA INTERFACE ---
         public string? ChamadaCard { get; set; } = "Uma nova aventura começa.";
         public bool ExibirRelogioSessao { get; set; } = true;
+    }
+
+    public class GlobalSettings
+    {
+        [Key]
+        public int Id { get; set; } = 1;
+        public bool ManutencaoAtiva { get; set; } = false;
+        public string MensagemManutencao { get; set; } = "O portal está em manutenção.";
     }
 }

@@ -8,6 +8,8 @@ namespace PortalDMPlace.Models.ViewModels
         public string NomeSimples { get; set; } = string.Empty;
         public string? Description { get; set; }
 
+        public int CriadorId { get; set; }
+
         // Dados de Settings
         public int SettingsId { get; set; }
         public string? TemaCorPrimaria { get; set; }
@@ -17,6 +19,6 @@ namespace PortalDMPlace.Models.ViewModels
         public string? ChamadaCard { get; set; }
         public string? FonteFamilia { get; set; }
         public string? DiscordWebhookUrl { get; set; }
-        public string? FoundryUrl { get; set; }
+        public string? VttUrl { get; set; }
     }
 }

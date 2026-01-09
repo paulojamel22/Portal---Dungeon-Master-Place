@@ -1,11 +1,15 @@
 ﻿@using PortalDMPlace.Functions
+@using PortalDMPlace.Enumerators
 @inject IHttpContextAccessor HttpContextAccessor
 @inject HelpersFunctions Helpers
+@inject AccountObject AccountObject
 @{
     Layout = null;
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-    var sessaoId = HttpContextAccessor?.HttpContext?.Session.GetInt32("Campanha");
+    
+    // Pegamos o ID da campanha que o mestre está "focado" via sessão
+    var sessaoId = HttpContextAccessor?.HttpContext?.Session.GetInt32("CampanhaId");
 }
 
 <!DOCTYPE html>
@@ -17,91 +21,78 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Mantendo seus estilos originais que estão ótimos */
-            :root {
-            --sidebar-width: 240px;
-            --topbar-height: 65px;
+        :root {
+            --sidebar-width: 250px;
+            --topbar-height: 70px;
             --accent-color: #ffc107;
-            --dark-bg: #121212;
+            --dark-bg: #0f0f0f;
+            --sidebar-bg: #141414;
             --card-bg: #1e1e1e;
-            --text-muted: #b0b0b0; /* Um cinza claro que destaca no preto */
-            --input-bg: #252525;
-        }
-
-        /* Ajuste global para textos secundários */
-        .text-muted {
-            color: var(--text-muted) !important;
-        }
-
-        /* Labels de formulários nas Configurações */
-        .form-label {
-            color: #e0e0e0; /* Quase branco para leitura imediata */
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        /* Inputs para não ficarem "apagados" */
-        .form-control {
-            background-color: var(--input-bg);
-            border: 1px solid #333;
-            color: #fff;
-        }
-        
-        .form-control:focus {
-            background-color: #2d2d2d;
-            border-color: var(--accent-color);
-            color: #fff;
-            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.1);
+            --text-muted: #888;
         }
 
         body {
-            background-color: #181818;
+            background-color: #121212;
             color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
         }
 
+        /* Sidebar Customizada */
         .sidebar {
             position: fixed; top: 0; left: 0; height: 100vh;
-            width: var(--sidebar-width); background-color: var(--dark-bg);
-            border-right: 1px solid #2d2d2d; z-index: 1001;
+            width: var(--sidebar-width); background-color: var(--sidebar-bg);
+            border-right: 1px solid #222; z-index: 1001;
+            display: flex; flex-direction: column;
         }
 
         .sidebar-header {
             height: var(--topbar-height); display: flex; align-items: center;
-            padding: 0 20px; border-bottom: 1px solid #2d2d2d; background-color: #000;
+            padding: 0 25px; border-bottom: 1px solid #222;
         }
+
+        .sidebar-menu { flex: 1; overflow-y: auto; padding-top: 20px; }
 
         .sidebar-menu a {
-            display: flex; align-items: center; color: #999;
-            padding: 12px 20px; text-decoration: none; transition: 0.3s;
-            border-left: 4px solid transparent;
+            display: flex; align-items: center; color: #aaa;
+            padding: 12px 25px; text-decoration: none; transition: 0.2s;
+            font-size: 0.9rem; font-weight: 500;
         }
+
+        .sidebar-menu a i { font-size: 1.1rem; }
 
         .sidebar-menu a:hover, .sidebar-menu a.active {
-            color: var(--accent-color); background: rgba(255, 193, 7, 0.1);
-            border-left-color: var(--accent-color);
+            color: var(--accent-color); background: rgba(255, 193, 7, 0.05);
+            box-shadow: inset 4px 0 0 var(--accent-color);
         }
 
+        /* Topbar */
         .topbar {
             position: fixed; top: 0; left: var(--sidebar-width); right: 0;
-            height: var(--topbar-height); background-color: var(--dark-bg);
+            height: var(--topbar-height); background-color: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px; border-bottom: 1px solid #2d2d2d; z-index: 1000;
+            padding: 0 30px; border-bottom: 1px solid #222; z-index: 1000;
         }
 
         .main-content {
-            margin-left: var(--sidebar-width); margin-top: var(--topbar-height); padding: 40px;
+            margin-left: var(--sidebar-width); margin-top: var(--topbar-height); 
+            padding: 40px; min-height: calc(100vh - var(--topbar-height));
         }
 
         .campanha-badge {
-            background: rgba(255, 193, 7, 0.1); border: 1px solid var(--accent-color);
-            color: var(--accent-color); padding: 5px 15px; border-radius: 20px;
-            font-size: 0.85rem; font-weight: bold;
+            background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);
+            color: var(--accent-color); padding: 6px 16px; border-radius: 50px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        }
+
+        .user-profile-nav img {
+            width: 35px; height: 35px; object-fit: cover; border-radius: 50%;
+            border: 2px solid #333;
         }
     </style>
 </head>
@@ -109,62 +100,72 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <span class="text-warning fw-bold fs-5"><i class="bi bi-dice-5-fill"></i> DM CONTROL</span>
+            <span class="text-warning fw-bold fs-5"><i class="bi bi-dice-5-fill me-2"></i>DM CONTROL</span>
         </div>
+        
         <div class="sidebar-menu">
-            @* 1. Dashboard Principal *@
+            <small class="px-4 text-muted-50 text-uppercase fw-bold mb-2 d-block" style="font-size: 0.65rem;">Principal</small>
+            
             <a asp-controller="Admin" asp-action="Index" class="@(currentController == "Admin" && currentAction == "Index" ? "active" : "")">
                 <i class="bi bi-speedometer2 me-3"></i> Dashboard
             </a>
 
-            @* 2. Gestão de Notícias (Novo Controller Noticia) *@
             <a asp-controller="Noticia" asp-action="Index" class="@(currentController == "Noticia" ? "active" : "")">
-                <i class="bi bi-journal-text me-3"></i> Notícias
+                <i class="bi bi-journal-richtext me-3"></i> Crônicas / Notícias
             </a>
 
-            @* 3. Gestão de Campanhas (IndexAdmin) *@
-            <a asp-controller="Campanha" asp-action="Index" class="@(currentController == "Campanha" && (currentAction == "Index" || currentAction == "CriarCampanha") ? "active" : "")">
-                <i class="bi bi-map me-3"></i> Campanhas
+            <a asp-controller="Campanha" asp-action="Index" class="@(currentController == "Campanha" ? "active" : "")">
+                <i class="bi bi-layers me-3"></i> Meus Mundos
             </a>
 
-            @* 4. Configurações Gerais *@
-            <a asp-controller="Admin" asp-action="Configuracoes" class="@(currentController == "Admin" && currentAction == "Configuracoes" ? "active" : "")">
-                <i class="bi bi-gear me-3"></i> Configurações
-            </a>
-            
-            <div class="mt-4 px-3">                
-                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Utilitários</small>
-            </div>
-            
-            <a href="/" target="_blank">
-                <i class="bi bi-box-arrow-up-right me-3"></i> Ver Site Público
-            </a>
+            <div class="mt-4">
+                <small class="px-4 text-muted-50 text-uppercase fw-bold mb-2 d-block" style="font-size: 0.65rem;">Sistema</small>
+                
+                <a asp-controller="Account" asp-action="Index" class="@(currentController == "Account" ? "active" : "")">
+                    <i class="bi bi-person-badge me-3"></i> Meu Perfil
+                </a>
 
-            <div class="position-absolute bottom-0 w-100 border-top border-secondary border-opacity-25 bg-black">
-                <a asp-controller="Admin" asp-action="Logout" class="text-danger">
-                    <i class="bi bi-power me-3"></i> Encerrar Sessão
+                <a href="/" target="_blank">
+                    <i class="bi bi-eye me-3"></i> Visualizar Site
                 </a>
             </div>
+        </div>
+
+        <div class="p-3 border-top border-secondary border-opacity-10">
+            <a asp-controller="Admin" asp-action="Logout" class="text-danger text-decoration-none d-flex align-items-center px-2 py-2 rounded hover-bg-danger">
+                <i class="bi bi-box-arrow-left me-3"></i> <span class="fw-bold">Encerrar Sessão</span>
+            </a>
         </div>
     </aside>
 
     <header class="topbar">
         <div class="d-flex align-items-center">
-            <h5 class="m-0 fw-bold">@ViewData["Title"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item text-muted-50 small">Painel</li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">@ViewData["Title"]</li>
+                </ol>
+            </nav>
         </div>
         
         <div class="d-flex align-items-center gap-3">
             @if (sessaoId.HasValue)
             {
+                @* IMPORTANTE: Usamos o ID da campanha da sessão para buscar o nome *@
                 var nomeCampanha = Helpers.GetCampaignNameById(sessaoId.Value);
-                <span class="campanha-badge">
-                    <i class="bi bi-stars me-1"></i> Mundo: @nomeCampanha
-                </span>
+                <div class="campanha-badge">
+                    <i class="bi bi-pennant-fill me-1"></i> @nomeCampanha
+                </div>
             }
 
-            <div class="text-end ms-3 border-start ps-3 border-secondary">
-                <small class="d-block text-muted" style="font-size: 0.7rem;">Mestre Logado:</small>
-                <span class="small fw-bold text-white">@User.Identity?.Name</span>
+            <div class="user-profile-nav d-flex align-items-center border-start ps-3 border-secondary border-opacity-50">
+                <div class="text-end me-3 d-none d-sm-block">
+                    <span class="d-block text-white fw-bold small">@AccountObject.Name</span>
+                    <span class="text-muted-50" style="font-size: 0.65rem;">@AccountObject.AccountType.ToFriendlyString()</span>
+                </div>
+                <a asp-controller="Account" asp-action="Index">
+                    <img src="@AccountObject.ProfileImageUrl" alt="Perfil">
+                </a>
             </div>
         </div>
     </header>
@@ -174,6 +175,5 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @RenderSection("Scripts", required: false)
 </body>
 </html>
