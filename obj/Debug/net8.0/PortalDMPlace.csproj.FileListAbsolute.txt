@@ -1,0 +1,8 @@
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.csproj.AssemblyReference.cache
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.GeneratedMSBuildEditorConfig.editorconfig
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.AssemblyInfoInputs.cache
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.AssemblyInfo.cs
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.csproj.CoreCompileInputs.cache
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.MvcApplicationPartsAssemblyInfo.cache
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.RazorAssemblyInfo.cache
+D:\MEGA\Projects\Portal - Dungeon Master Place\obj\Debug\net8.0\PortalDMPlace.RazorAssemblyInfo.cs
