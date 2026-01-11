@@ -1,0 +1,149 @@
+﻿@model PortalDMPlace.Models.Noticia
+@{
+    ViewData["Title"] = Model.Titulo;
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" class="text-warning">Crônicas</a></li>
+            <li class="breadcrumb-item active text-light" aria-current="page">Visualizando</li>
+        </ol>
+    </nav>
+
+    <div class="card bg-dark text-light shadow-lg border-0 overflow-hidden" style="border-radius: 15px; background: linear-gradient(145deg, #1a1a1a, #121212);">
+        
+        @if (!string.IsNullOrEmpty(Model.ImagemUrl))
+        {
+            <div class="position-relative">
+                <img src="@Model.ImagemUrl" class="img-fluid w-100" alt="@Model.Titulo" 
+                     style="max-height: 450px; object-fit: cover; border-bottom: 3px solid var(--bs-warning);">
+                
+                <div class="position-absolute top-0 end-0 p-3">
+                    <span class="badge bg-warning text-dark fw-bold shadow-sm px-3 py-2">
+                        <i class="bi bi-tag-fill me-1"></i> @Model.Categoria
+                    </span>
+                </div>
+            </div>
+        }
+
+        <div class="card-body p-4 p-md-5">
+            <header class="mb-4">
+                <h1 class="display-5 fw-bold text-warning mb-3" style="font-family: 'Cinzel', serif;">@Model.Titulo</h1>
+                
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="d-flex align-items-center bg-black bg-opacity-25 px-3 py-2 rounded-pill border border-secondary border-opacity-25">
+                        <i class="bi bi-person-circle me-2 text-warning"></i>
+                        <span class="text-white fw-bold">@Model.Autor</span>
+                    </div>
+                    <div class="d-flex align-items-center bg-black bg-opacity-25 px-3 py-2 rounded-pill border border-secondary border-opacity-25">
+                        <i class="bi bi-calendar3 me-2 text-warning"></i>
+                        <span class="text-white-50">@Model.DataPublicacao.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="d-flex align-items-center bg-black bg-opacity-25 px-3 py-2 rounded-pill border border-secondary border-opacity-25">
+                        <i class="bi bi-shield-shaded me-2 text-info"></i>
+                        <span class="text-info fw-bold">@(Model.Campanha?.Name ?? "Crônica Geral")</span>
+                    </div>
+                </div>
+            </header>
+
+            <hr class="border-warning opacity-25 mb-5">
+
+            <article class="news-content">
+                @Html.Raw(Model.Conteudo)
+            </article>
+        </div>
+
+        <div class="card-footer bg-black bg-opacity-50 border-top border-secondary p-4">
+            <div class="row align-items-center g-3">
+                <div class="col-md-6">
+                    <a asp-action="Index" class="btn btn-outline-light px-4">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar à Tabela
+                    </a>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="btn-group shadow">
+                        <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning px-4 fw-bold">
+                            <i class="bi bi-pencil-square me-2"></i>Editar Crônica
+                        </a>
+                        <form asp-action="Excluir" asp-route-id="@Model.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Mestre, os pergaminhos serão incinerados. Confirmar exclusão?')">
+                            <button type="submit" class="btn btn-outline-danger px-3">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilização Profissional para Conteúdo Dinâmico (CKEditor/TinyMCE) */
+    .news-content {
+        color: #d1d1d1;
+        line-height: 1.8;
+        font-size: 1.15rem;
+        word-wrap: break-word;
+    }
+
+    .news-content p { margin-bottom: 1.6rem; }
+    
+    .news-content h2, .news-content h3, .news-content h4 {
+        color: #ffc107;
+        font-family: 'Cinzel', serif;
+        margin-top: 2.5rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .news-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin: 2rem auto;
+        display: block;
+        border: 2px solid #333;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .news-content blockquote {
+        background: rgba(255, 193, 7, 0.05);
+        border-left: 5px solid #ffc107;
+        margin: 2rem 0;
+        padding: 1.5rem 2rem;
+        font-style: italic;
+        border-radius: 0 10px 10px 0;
+        color: #ffc107;
+    }
+
+    .news-content ul, .news-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .news-content li { margin-bottom: 0.5rem; }
+
+    /* Links dentro do conteúdo */
+    .news-content a {
+        color: #0dcaf0;
+        text-decoration: none;
+        border-bottom: 1px dashed #0dcaf0;
+        transition: all 0.2s;
+    }
+    .news-content a:hover { color: #ffc107; border-bottom-color: #ffc107; }
+
+    /* Ajuste para tabelas que podem vir do editor */
+    .news-content table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #fff;
+        border-collapse: collapse;
+        background: rgba(255,255,255,0.05);
+    }
+    .news-content table td, .news-content table th {
+        padding: 0.75rem;
+        border: 1px solid #444;
+    }
+</style>

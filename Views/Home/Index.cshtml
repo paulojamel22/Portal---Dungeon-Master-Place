@@ -1,0 +1,131 @@
+﻿@model IEnumerable<PortalDMPlace.Models.Campanha>
+@inject PortalDMPlace.Functions.HelpersFunctions Helpers
+@{
+    ViewData["Title"] = "Portais do DM Place";
+}
+
+<style>
+    /* Tipografia de Fantasia */
+    .portal-title-font { font-family: 'Cinzel', serif; letter-spacing: 2px; }
+
+    .card-portal {
+        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(255,255,255,0.1);
+        background-color: #080808 !important;
+        position: relative;
+    }
+
+    .card-portal:hover {
+        transform: translateY(-12px);
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 15px 45px var(--glow-color) !important;
+    }
+
+    /* Efeito de Vidro e Gradiente no rodapé do card */
+    .bg-overlay-gradient {
+        background: linear-gradient(to bottom, transparent 0%, #080808 30%, #080808 100%);
+        margin-top: -100px;
+        padding: 40px 1.5rem 1.5rem 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .img-portal {
+        height: 320px;
+        object-fit: cover;
+        filter: grayscale(30%) brightness(0.6);
+        transition: transform 0.8s ease, filter 0.5s ease;
+    }
+
+    .card-portal:hover .img-portal {
+        filter: grayscale(0%) brightness(0.9);
+        transform: scale(1.1);
+    }
+
+    .btn-portal {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        color: #000 !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s;
+    }
+
+    .btn-portal:hover {
+        filter: brightness(1.2);
+        box-shadow: 0 0 20px var(--primary-color);
+        transform: scale(1.02);
+    }
+
+    /* Badge de "Ativo" ou contagem de crônicas (opcional) */
+    .badge-status {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 3;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(5px);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        font-size: 0.7rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="text-center mb-5 mt-4">
+        <h1 class="text-warning portal-title-font display-3 fw-bold mb-2" style="text-shadow: 0 0 20px rgba(255, 193, 7, 0.4);">
+            PORTAIS INTERPLANARES
+        </h1>
+        <div class="d-flex justify-content-center align-items-center gap-3">
+            <hr class="border-warning opacity-25 w-25">
+            <i class="bi bi-stars text-warning fs-4"></i>
+            <hr class="border-warning opacity-25 w-25">
+        </div>
+        <p class="text-muted fs-5 mt-2">Escolha uma realidade e mergulhe em suas crônicas.</p>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        @foreach (var campanha in Model)
+        {
+            var settings = await Helpers.GetSettingsAsync(campanha.Id);
+            // Fallback para cores caso o mestre não defina
+            var pColor = settings.TemaCorPrimaria ?? "#ffc107";
+            var sColor = settings.TemaCorSecundaria ?? "#6c757d";
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-portal h-100 rounded-4 overflow-hidden" 
+                     style="--primary-color: @pColor; 
+                            --secondary-color: @sColor; 
+                            --glow-color: @(pColor)33;">
+                    
+                    <span class="badge badge-status px-3 py-2 rounded-pill">
+                        <i class="bi bi-broadcast me-1"></i> MUNDO ATIVO
+                    </span>
+
+                    <div class="overflow-hidden">
+                        <img src="@(string.IsNullOrEmpty(settings.CardThumbnailUrl) ? "/img/default_portal.png" : settings.CardThumbnailUrl)" 
+                             class="card-img-top img-portal" 
+                             alt="Portal para @campanha.Name">
+                    </div>
+
+                    <div class="card-body d-flex flex-column bg-overlay-gradient text-center">
+                        <h2 class="card-title portal-title-font h4 mb-3" style="color: @pColor">
+                             @campanha.Name
+                        </h2>
+                        
+                        <p class="card-text text-light opacity-75 small flex-grow-1 px-2">
+                            @(string.IsNullOrEmpty(settings.ChamadaCard) ? "Uma nova jornada aguarda por heróis destemidos..." : settings.ChamadaCard)
+                        </p>
+                       
+                        <div class="mt-4">
+                            <a href="/C/@campanha.NomeSimples" class="btn btn-portal w-100 py-3 rounded-3 shadow">
+                                ATRAVESSAR PORTAL <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

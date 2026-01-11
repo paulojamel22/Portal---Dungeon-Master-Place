@@ -1,0 +1,133 @@
+﻿@model PortalDMPlace.Models.Noticia
+@using PortalDMPlace.Models
+@inject PortalDMPlace.Models.DataContext _context
+
+@{
+    ViewData["Title"] = "Forjar Nova Notícia";
+    Layout = "_LayoutAdmin";
+    
+    // Busca todas as campanhas ativas para o dropdown dinâmico
+    var campanhas = _context.Campanhas.ToList();
+}
+
+<div class="container py-4">
+    <h2 class="mb-4 text-warning text-center">📰 Publicar Nova Crônica</h2>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger border-danger bg-dark text-danger">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i> @ViewBag.Error
+        </div>
+    }
+
+    <form asp-controller="Noticia" asp-action="Criar" method="post" enctype="multipart/form-data" class="bg-dark bg-opacity-75 p-4 rounded-4 border border-warning shadow-lg">
+        @Html.AntiForgeryToken()
+        
+        <div class="row">
+            <div class="col-md-8 border-end border-secondary">
+                <div class="mb-3">
+                    <label asp-for="Titulo" class="form-label fw-bold text-warning">Título da Notícia</label>
+                    <input asp-for="Titulo" class="form-control bg-dark text-white border-secondary" placeholder="Ex: O Retorno das Crônicas de Aetheria" required />
+                    <span asp-validation-for="Titulo" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-end mb-2">
+                        <label asp-for="Conteudo" class="form-label fw-bold text-warning mb-0">Conteúdo (HTML permitido)</label>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="previewHtml()">
+                            <i class="bi bi-eye"></i> Visualizar Preview
+                        </button>
+                    </div>
+                    <textarea asp-for="Conteudo"
+                              class="form-control bg-dark text-light border-secondary font-monospace"
+                              rows="18"
+                              placeholder="Escreva sua história aqui. Tags HTML como <p>, <b> e <h3> são aceitas."></textarea>
+                    <span asp-validation-for="Conteudo" class="text-danger small"></span>
+                </div>
+
+                <div id="previewArea" class="border border-info mt-3 p-4 rounded-3 bg-white text-dark shadow-sm" style="display:none; max-height: 500px; overflow-y: auto;">
+                    <div class="d-flex justify-content-between border-bottom mb-3 pb-2">
+                        <h5 class="text-info mb-0"><i class="bi bi-eyeglasses"></i> Prévia do Portal:</h5>
+                        <button type="button" class="btn-close" onclick="document.getElementById('previewArea').style.display='none'"></button>
+                    </div>
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="CampanhaId" class="form-label fw-bold text-warning">Vincular à Campanha</label>
+                    <select asp-for="CampanhaId" class="form-select bg-dark text-white border-secondary" required>
+                        <option value="">Selecione a Crônica...</option>
+                        @foreach (var camp in campanhas)
+                        {
+                            <option value="@camp.Id">@camp.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CampanhaId" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Categoria" class="form-label fw-bold text-warning">Categoria</label>
+                    <select asp-for="Categoria" class="form-select bg-dark text-white border-secondary" required>
+                        <option value="">Selecione...</option>
+                        @if (ViewBag.Categorias != null)
+                        {
+                            foreach (var cat in (List<string>)ViewBag.Categorias)
+                            {
+                                <option value="@cat">@cat</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Autor" class="form-label fw-bold text-warning">Autor (Mestre)</label>
+                    <input asp-for="Autor" class="form-control bg-dark text-white border-secondary" value="@(ViewBag.Name ?? "Mestre")" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-warning">Imagem de Capa (Upload)</label>
+                    <input type="file" name="ImagemFile" class="form-control bg-dark text-white border-secondary" accept="image/*" />
+                    <div class="form-text text-muted small">A imagem será salva no servidor Ubuntu.</div>
+                </div>
+
+                <div class="card bg-secondary bg-opacity-10 border-secondary mt-4">
+                    <div class="card-body">
+                        <h6 class="text-warning border-bottom pb-2 mb-3">Resumo do Post</h6>
+                        <p class="small text-light mb-0">
+                            Ao publicar, o Webhook configurado enviará automaticamente uma notificação para o Discord da campanha selecionada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end mt-4 border-top border-secondary pt-3">
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary px-4 me-2">Cancelar</a>
+            <button type="submit" class="btn btn-warning px-5 fw-bold text-dark shadow">
+                <i class="bi bi-journal-plus"></i> Publicar Crônica
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function previewHtml() {
+            const content = document.getElementById("Conteudo").value;
+            const preview = document.getElementById("previewContent");
+            const area = document.getElementById("previewArea");
+            
+            if (content.trim() === "") {
+                alert("Mestre, escreva algo antes de visualizar!");
+                return;
+            }
+
+            preview.innerHTML = content;
+            area.style.display = "block";
+            area.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
