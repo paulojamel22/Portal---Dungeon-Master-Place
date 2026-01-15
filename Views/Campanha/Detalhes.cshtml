@@ -1,0 +1,150 @@
+@model PortalDMPlace.Models.Noticia
+@using PortalDMPlace.Functions
+@{
+    var settings = ViewBag.Settings as PortalDMPlace.Models.Settings ?? new PortalDMPlace.Models.Settings();
+    var campanha = ViewBag.Campanha as PortalDMPlace.Models.Campanha;
+    var dynamicStyle = HelpersFunctions.GetInlineStyle(settings);
+    
+    ViewData["Title"] = Model?.Titulo + " | " + (campanha?.Name ?? "Crônica");
+}
+
+<style>
+    :root { @Html.Raw(dynamicStyle) }
+    
+    body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #050505; 
+        color: #d1d1d1;
+    }
+
+    /* Tipografia de Título */
+    .lore-title {
+        font-family: var(--font-title, 'Cinzel', serif);
+        color: #fff;
+        text-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.3);
+        line-height: 1.2;
+    }
+
+    /* Conteúdo da Crônica */
+    .conteudo-noticia {
+        font-size: 1.15rem;
+        line-height: 1.9;
+        color: #ccc;
+        text-align: justify;
+    }
+
+    /* Efeito de primeira letra maior (Capitular) */
+    .conteudo-noticia > p:first-of-type::first-letter {
+        float: left;
+        font-family: var(--font-title, 'Cinzel', serif);
+        font-size: 4rem;
+        line-height: 3rem;
+        padding-top: 4px;
+        padding-right: 8px;
+        padding-left: 3px;
+        color: var(--primary-color);
+    }
+
+    .conteudo-noticia strong { 
+        color: var(--primary-color); 
+        font-weight: 700;
+    }
+
+    .conteudo-noticia blockquote {
+        border-left: 4px solid var(--primary-color);
+        padding: 20px 30px;
+        background: rgba(255, 255, 255, 0.03);
+        font-style: italic;
+        margin: 30px 0;
+        border-radius: 0 10px 10px 0;
+    }
+
+    .meta-info {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 15px 25px;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .img-main {
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: transform 0.5s;
+    }
+
+    /* Botão de retorno elegante */
+    .btn-return {
+        color: #888;
+        text-decoration: none;
+        transition: 0.3s;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+    }
+    .btn-return:hover {
+        color: var(--primary-color);
+        letter-spacing: 3px;
+    }
+</style>
+
+<div class="container mt-5 pt-4 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            
+            <div class="mb-4">
+                <a href="/C/@campanha?.NomeSimples" class="btn-return">
+                    <i class="bi bi-chevron-left me-2"></i> Retornar ao Mural de @campanha?.Name
+                </a>
+            </div>
+
+            <header class="mb-5 text-center">
+                <h1 class="lore-title display-3 mb-4">@Model?.Titulo</h1>
+                
+                <div class="meta-info shadow-sm">
+                    <span class="small">
+                        <i class="bi bi-person-circle text-warning me-1"></i> 
+                        Relatado por <span class="text-white fw-bold">@Model?.Autor</span>
+                    </span>
+                    <span class="text-white-50 opacity-25">|</span>
+                    <span class="small">
+                        <i class="bi bi-calendar3 text-warning me-1"></i> 
+                        @(Model != null ? HelpersFunctions.FormatLoreDate(Model.DataPublicacao) : "")
+                    </span>
+                </div>
+            </header>
+
+            @if (!string.IsNullOrEmpty(Model?.ImagemUrl))
+            {
+                <div class="mb-5">
+                    <img src="@Model.ImagemUrl" class="img-fluid img-main" alt="@Model.Titulo">
+                    @if(!string.IsNullOrEmpty(Model.Categoria)) {
+                        <div class="text-center mt-3">
+                            <span class="badge rounded-pill px-3 py-2 border border-secondary text-secondary" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                <i class="bi bi-tag me-1"></i> CATEGORIA: @Model.Categoria.ToUpper()
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+
+            <article class="conteudo-noticia">
+                @Html.Raw(Model?.Conteudo)
+            </article>
+
+            <footer class="mt-5 pt-5 border-top border-secondary border-opacity-25 text-center">
+                <p class="text-muted small mb-4 italic">Fim deste relato.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" onclick="window.print()">
+                        <i class="bi bi-printer me-2"></i> Imprimir Pergaminho
+                    </a>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+</div>

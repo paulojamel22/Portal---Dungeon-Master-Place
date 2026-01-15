@@ -1,0 +1,120 @@
+@using PortalDMPlace.Enumerators
+@model PortalDMPlace.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Nova Identidade";
+    Layout = "_LayoutLogin";
+}
+
+<div class="login-card">
+    <div class="text-center mb-4">
+        <div class="logo-wrapper mb-3">
+            <i class="bi bi-shield-plus dm-logo-icon"></i>
+            <div class="logo-glow"></div>
+        </div>
+        <h2 class="text-warning fw-bold mb-1" style="font-family: 'Cinzel', serif; letter-spacing: 1px;">Criar Conta</h2>
+        <p class="text-muted small">Inicie sua jornada na taverna dos mestres</p>
+    </div>
+
+    <form asp-action="Register" method="post" autocomplete="off">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label text-warning small fw-bold text-uppercase">Nome Completo</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-person-badge"></i>
+                </span>
+                <input asp-for="Name" class="form-control" placeholder="Ex: Elminster de Shadowdale" required />
+            </div>
+            <span asp-validation-for="Name" class="text-danger smaller"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="BirthDate" class="form-label text-warning small fw-bold text-uppercase">Data de Nascimento</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-calendar"></i>
+                </span>
+                <input asp-for="BirthDate" type="date" class="form-control" required />
+            </div>
+            <span asp-validation-for="BirthDate" class="text-danger smaller"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label text-warning small fw-bold text-uppercase">Nome de Usuário</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-at"></i>
+                </span>
+                <input asp-for="Username" class="form-control" placeholder="Seu apelido de mestre" required />
+            </div>
+            <span asp-validation-for="Username" class="text-danger smaller"></span>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <label asp-for="Password" class="form-label text-warning small fw-bold text-uppercase">Senha</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="••••••" required />
+            </div>
+            <div class="col-6">
+                <label asp-for="ConfirmPassword" class="form-label text-warning small fw-bold text-uppercase">Confirmar</label>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="••••••" required />
+            </div>
+            <div class="col-12">
+                <span asp-validation-for="Password" class="text-danger smaller d-block"></span>
+                <span asp-validation-for="ConfirmPassword" class="text-danger smaller d-block"></span>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="AccountType" class="form-label text-warning small fw-bold text-uppercase">Caminho no Reino</label>
+            <div class="input-group">
+                <span class="input-group-text bg-black border-secondary border-opacity-25 text-warning">
+                    <i class="bi bi-mortboard-fill"></i>
+                </span>
+                <select asp-for="AccountType" class="form-control form-select shadow-none">
+                    <option value="@AccountType.Player">Aventureiro (Jogador)</option>
+                    <option value="@AccountType.Master" selected>Narrador (Mestre de Jogo)</option>
+                </select>
+            </div>
+            <span asp-validation-for="AccountType" class="text-danger smaller"></span>
+        </div>
+
+        <button type="submit" class="btn btn-warning w-100 fw-bold py-3 mb-3 shadow-sm">
+            <i class="bi bi-hammer me-2"></i> Forjar Identidade
+        </button>
+        
+        <div class="text-center py-2">
+            <div class="d-flex align-items-center mb-2">
+                <hr class="flex-grow-1 border-secondary opacity-25">
+            </div>
+            <a asp-action="Login" class="btn-back text-decoration-none">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Já possui conta? <span class="text-warning fw-bold">Entre aqui.</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Estilos para manter a consistência com o Login */
+    .logo-wrapper { position: relative; display: inline-block; }
+    .logo-glow {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px; height: 60px;
+        background: var(--dm-gold);
+        filter: blur(40px);
+        opacity: 0.2;
+        z-index: -1;
+    }
+    .input-group-text { border-right: none !important; border-radius: 12px 0 0 12px !important; }
+    .form-control, .form-select { border-left: none !important; border-radius: 0 12px 12px 0 !important; }
+    .smaller { font-size: 0.75rem; }
+    
+    /* Ajuste para o select no modo dark */
+    select option { background-color: #141414; color: white; }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

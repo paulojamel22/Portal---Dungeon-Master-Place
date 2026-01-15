@@ -1,0 +1,130 @@
+@model PortalDMPlace.Models.ViewModels.CampanhaSettingsViewModel
+@{
+    ViewData["Title"] = "Editar Mundo";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="text-warning"><i class="bi bi-pencil-square me-2"></i> Editar Essência do Mundo</h2>
+            <p class="text-white-50">Gerencie os dados básicos e a identidade visual de <strong>@Model.Name</strong></p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Sucesso"]
+        </div>
+    }
+
+    <form asp-action="Editar" method="post" enctype="multipart/form-data" class="row g-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CampanhaId" />
+        <input type="hidden" asp-for="SettingsId" />
+
+        <div class="col-md-7">
+            <div class="card bg-dark border-secondary shadow mb-4">
+                <div class="card-header border-secondary py-3">
+                    <h5 class="mb-0 text-warning"><i class="bi bi-journal-text me-2"></i> Informações da Jornada</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">NOME DA CAMPANHA</label>
+                        <input asp-for="Name" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">SLUG DA URL (portal.dmplace.com.br/C/...)</label>
+                        <input asp-for="NomeSimples" class="form-control bg-dark text-white border-secondary" required />
+                        <small class="text-muted">Cuidado: alterar isso quebra links compartilhados.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">DESCRIÇÃO DA JORNADA</label>
+                        <textarea asp-for="Description" class="form-control bg-dark text-white border-secondary" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-dark border-secondary shadow">
+                <div class="card-header border-secondary py-3">
+                    <h5 class="mb-0 text-warning"><i class="bi bi-palette me-2"></i> Identidade Visual</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">CHAMADA DO CARD (HOME)</label>
+                        <input asp-for="ChamadaCard" class="form-control bg-dark text-white border-secondary" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">FONTE DA CAMPANHA</label>
+                        <select asp-for="FonteFamilia" class="form-select bg-dark text-white border-secondary">
+                            @* Se o Model.FonteFamilia vier nulo, ele não seleciona nada, causando o erro *@
+                            <option value="'Segoe UI', sans-serif">Padrão (Sans-Serif)</option>
+                            <option value="'Georgia', serif">Épico (Serif)</option>
+                            <option value="'Cinzel', serif">Fantasia Medieval</option>
+                            <option value="'Courier New', monospace">Mistério/Investigação</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-white-50 small">COR PRIMÁRIA</label>
+                            <input type="color" asp-for="TemaCorPrimaria" class="form-control form-control-color w-100 bg-dark border-secondary" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-white-50 small">COR SECUNDÁRIA</label>
+                            <input type="color" asp-for="TemaCorSecundaria" class="form-control form-control-color w-100 bg-dark border-secondary" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card bg-dark border-secondary shadow mb-4">
+                <div class="card-header border-secondary py-3">
+                    <h5 class="mb-0 text-warning"><i class="bi bi-image me-2"></i> Mídias</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">BANNER DO TOPO</label>
+                        <input type="file" name="bannerFile" class="form-control bg-dark text-white border-secondary" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">THUMBNAIL DO CARD</label>
+                        <input type="file" name="thumbFile" class="form-control bg-dark text-white border-secondary" />
+                    </div>
+                    <div class="text-center p-2 bg-black rounded">
+                        <img src="@Model.CardThumbnailUrl" class="img-fluid rounded border border-secondary" style="max-height: 120px;" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-dark border-secondary shadow">
+                <div class="card-header border-secondary py-3">
+                    <h5 class="mb-0 text-warning"><i class="bi bi-plug me-2"></i> Integrações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">WEBHOOK DISCORD</label>
+                        <input asp-for="DiscordWebhookUrl" class="form-control bg-dark text-white border-secondary" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white-50 small">LINK VTT(Roll20, FoundryVTT, etc...)</label>
+                        <input asp-for="VttUrl" class="form-control bg-dark text-white border-secondary" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow">
+                    <i class="bi bi-save2 me-2"></i> SALVAR TODAS AS ALTERAÇÕES
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

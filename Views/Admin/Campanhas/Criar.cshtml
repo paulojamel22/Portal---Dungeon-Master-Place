@@ -1,0 +1,79 @@
+﻿@model PortalDMPlace.Models.Campanha
+@{
+    ViewData["Title"] = "Nova Campanha";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-4">
+                <h2 class="text-warning"><i class="bi bi-hammer me-2"></i> Forjar Novo Mundo</h2>
+                <p class="text-muted">Defina os pilares básicos da sua nova jornada.</p>
+            </div>
+
+            <form asp-action="Criar" method="post" class="bg-dark bg-opacity-75 p-4 rounded-4 border border-warning shadow-lg">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-4">
+                    <label asp-for="Name" class="form-label fw-bold text-warning small text-uppercase">Nome da Campanha</label>
+                    <input asp-for="Name" class="form-control bg-dark text-white border-secondary py-2" placeholder="Ex: Ecos de Aetheria" required />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="NomeSimples" class="form-label fw-bold text-warning small text-uppercase">Slug da URL (Identificador)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-black text-muted border-secondary">/C/</span>
+                        <input asp-for="NomeSimples" class="form-control bg-dark text-white border-secondary" placeholder="ecos-de-aetheria" required />
+                    </div>
+                    <div class="form-text text-muted small">Use apenas letras, números e hifens. Este será o endereço público.</div>
+                    <span asp-validation-for="NomeSimples" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label fw-bold text-warning small text-uppercase">Descrição Breve</label>
+                    <textarea asp-for="Description" class="form-control bg-dark text-white border-secondary" rows="4" placeholder="Uma breve introdução para situar os jogadores..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <hr class="border-secondary opacity-25 my-4" />
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-warning px-5 fw-bold text-dark shadow">
+                        <i class="bi bi-journal-plus me-2"></i> REGISTRAR MUNDO
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const slugInput = document.querySelector('input[name="NomeSimples"]');
+
+            if (nameInput && slugInput) {
+                nameInput.addEventListener('input', function () {
+                    // Transforma "O Reino de Aetheria" em "o-reino-de-aetheria"
+                    const slug = this.value
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                        .replace(/[^a-z0-9]/g, '-')     // Troca símbolos por hifens
+                        .replace(/-+/g, '-')             // Remove hifens duplos
+                        .replace(/^-|-$/g, '');          // Remove hifens no início ou fim
+                    
+                    slugInput.value = slug;
+                });
+            }
+        });
+    </script>
+}

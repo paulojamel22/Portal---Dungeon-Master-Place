@@ -1,0 +1,52 @@
+@model PortalDMPlace.Models.Account
+@using PortalDMPlace.Enumerators
+@{
+    ViewData["Title"] = "Forjar Usuário";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-warning mb-4 text-center"><i class="bi bi-person-plus"></i> Forjar Novo Usuário</h2>
+            
+            <form asp-action="CriarUsuario" method="post" class="bg-dark p-4 rounded-4 border border-secondary shadow-lg">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label text-warning small fw-bold">NOME COMPLETO</label>
+                    <input asp-for="Name" class="form-control bg-black text-white border-secondary" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-warning small fw-bold">USERNAME (LOGIN)</label>
+                    <input asp-for="Username" class="form-control bg-black text-white border-secondary" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-warning small fw-bold">SENHA INICIAL</label>
+                    <input type="password" name="PlainPassword" class="form-control bg-black text-white border-secondary" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-warning small fw-bold">NÍVEL DE ACESSO</label>
+                    <select asp-for="AccountType" class="form-select bg-black text-white border-secondary">
+                        <option value="@AccountType.Player">Aventureiro (Jogador)</option>
+                        <option value="@AccountType.Master">Mestre de Jogo</option>
+                        <option value="@AccountType.Administrator">Soberano (Admin)</option>
+                        <option value="@AccountType.Developer">Criador (Developer)</option>
+                    </select>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <a asp-action="Usuarios" class="btn btn-outline-secondary w-100">Cancelar</a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">CONCLUIR RITUAL</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
