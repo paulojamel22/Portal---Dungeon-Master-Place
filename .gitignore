@@ -20,20 +20,20 @@
 mono_crash.*
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
+Debug/
+DebugPublic/
+Release/
+Releases/
 x64/
 x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
+win32/
+arm/
+arm64/
 bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
+bin/
+obj/
+log/
+logs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -44,8 +44,8 @@ bld/
 Generated\ Files/
 
 # MSTest test Results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
+TestResult*/
+BuildLog.*
 
 # NUnit
 *.VisualState.xml
@@ -53,8 +53,8 @@ TestResult.xml
 nunit-*.xml
 
 # Build Results of an ATL Project
-[Dd]ebugPS/
-[Rr]eleasePS/
+DebugPS/
+ReleasePS/
 dlldata.c
 
 # Benchmark Results
@@ -135,7 +135,7 @@ $tf/
 
 # ReSharper is a .NET coding add-in
 _ReSharper*/
-*.[Rr]e[Ss]harper
+*.resharper
 *.DotSettings.user
 
 # TeamCity is a build add-in
@@ -170,7 +170,7 @@ AutoTest.Net/
 .sass-cache/
 
 # Installshield output folder
-[Ee]xpress/
+express/
 
 # DocProject is a documentation generator add-in
 DocProject/buildhelp/
@@ -186,7 +186,7 @@ DocProject/Help/html
 publish/
 
 # Publish Web Output
-*.[Pp]ublish.xml
+*.publish.xml
 *.azurePubxml
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
@@ -203,9 +203,9 @@ PublishScripts/
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+**/packages/*
 # except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/
+!**/packages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files
@@ -231,9 +231,9 @@ _pkginfo.txt
 
 # Visual Studio cache files
 # files ending in .cache can be ignored
-*.[Cc]ache
+*.cache
 # but keep track of directories ending in .cache
-!?*.[Cc]ache/
+!?*.cache/
 
 # Others
 ClientBin/
@@ -273,16 +273,16 @@ ServiceFabricBackup/
 *.ndf
 
 # SQLite database files
-database.db
+*.db
 
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout
 *.bim_*.settings
 *.rptproj.rsuser
-*- [Bb]ackup.rdl
-*- [Bb]ackup ([0-9]).rdl
-*- [Bb]ackup ([0-9][0-9]).rdl
+*- Backup.rdl
+*- Backup ([0-9]).rdl
+*- Backup ([0-9][0-9]).rdl
 
 # Microsoft Fakes
 FakesAssemblies/
@@ -468,7 +468,7 @@ ehthumbs_vista.db
 *.stackdump
 
 # Folder config file
-[Dd]esktop.ini
+Desktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
