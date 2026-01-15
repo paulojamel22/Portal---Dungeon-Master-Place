@@ -1,13 +1,10 @@
 @model PortalDMPlace.Models.Noticia
 @using PortalDMPlace.Models
-@inject PortalDMPlace.Models.DataContext _context
+@inject PortalDMPlace.Functions.HelpersFunctions Functions
 
 @{
     ViewData["Title"] = "Forjar Nova Notícia";
     Layout = "_LayoutAdmin";
-    
-    // Busca todas as campanhas ativas para o dropdown dinâmico
-    var campanhas = _context.Campanhas.ToList();
 }
 
 <div class="container py-4">
@@ -59,7 +56,7 @@
                     <label asp-for="CampanhaId" class="form-label fw-bold text-warning">Vincular à Campanha</label>
                     <select asp-for="CampanhaId" class="form-select bg-dark text-white border-secondary" required>
                         <option value="">Selecione a Crônica...</option>
-                        @foreach (var camp in campanhas)
+                        @foreach (var camp in ViewBag.Campanhas)
                         {
                             <option value="@camp.Id">@camp.Name</option>
                         }
@@ -95,9 +92,13 @@
                 <div class="card bg-secondary bg-opacity-10 border-secondary mt-4">
                     <div class="card-body">
                         <h6 class="text-warning border-bottom pb-2 mb-3">Resumo do Post</h6>
-                        <p class="small text-light mb-0">
-                            Ao publicar, o Webhook configurado enviará automaticamente uma notificação para o Discord da campanha selecionada.
+                        <p class="small text-light mb-2">
+                            Ao publicar, o Webhook enviará automaticamente uma notificação para o Discord.
                         </p>
+                        <button type="button" id="btnTestarWebhook" class="btn btn-sm btn-outline-info w-100">
+                            <i class="bi bi-discord"></i> Testar Conexão Discord
+                        </button>
+                        <div id="webhookFeedback" class="small mt-2" style="display:none;"></div>
                     </div>
                 </div>
             </div>
@@ -128,6 +129,43 @@
             area.style.display = "block";
             area.scrollIntoView({ behavior: 'smooth' });
         }
+    </script>
+    <script>
+        document.getElementById("btnTestarWebhook").addEventListener("click", function() {
+            const campanhaId = document.getElementById("CampanhaId").value;
+            const feedback = document.getElementById("webhookFeedback");
+            const btn = this;
+
+            if (!campanhaId) {
+                alert("Selecione a Campanha primeiro!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Testando...';
+
+            // Chave para bater na Action que criamos acima
+            fetch(`/Admin/Noticias/TestarWebhook?campanhaId=${campanhaId}`, {
+                method: 'POST',
+                headers: {
+                    // Necessário para o [ValidateAntiForgeryToken] do ASP.NET
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                feedback.style.display = "block";
+                feedback.className = data.success ? "text-success fw-bold" : "text-danger fw-bold";
+                feedback.innerHTML = data.message;
+            })
+            .catch(() => {
+                feedback.innerHTML = "Erro ao contactar o servidor.";
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-discord"></i> Testar Conexão Discord';
+            });
+        });
     </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

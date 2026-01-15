@@ -49,6 +49,7 @@ namespace PortalDMPlace.Controllers
                 campanhasQuery = campanhasQuery.Where(c => c.CriadorId == _user.Id);
 
             ViewBag.Campanhas = await campanhasQuery.ToListAsync();
+            ViewBag.Name = _user.Name;
             ViewBag.Categorias = new List<string> { "Atualização", "Evento", "Diário de Sessão", "Rumor" };
             ViewBag.DefaultAutor = _user.Name; // Sugere o nome do mestre logado
             
@@ -281,6 +282,46 @@ namespace PortalDMPlace.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"[Discord Error] {ex.Message}");
+            }
+        }
+
+        [HttpPost("TestarWebhook")]
+        public async Task<IActionResult> TestarWebhook(int campanhaId)
+        {
+            try
+            {
+                // 1. Busca a campanha e as configurações (igual na sua função original)
+                var campanha = await _context.Campanhas.FindAsync(campanhaId);
+                var settings = await _context.Settings.FirstOrDefaultAsync(s => s.CampanhaId == campanhaId);
+
+                if (campanha == null || settings == null || string.IsNullOrEmpty(settings.DiscordWebhookUrl))
+                {
+                    Console.WriteLine("[Webhook Test] Webhook não configurado ou campanha inválida.");
+                    return Json(new { success = false, message = "Webhook não configurado para esta campanha!" });
+                }
+
+                // 2. Cria uma notícia fake apenas para o teste
+                var noticiaTeste = new Noticia
+                {
+                    Id = 0,
+                    Titulo = "🛠️ Teste de Conexão Bem-Sucedido!",
+                    Conteudo = "<p>O <b>Portal DM Place</b> conseguiu estabelecer o vínculo arcano com este canal. O corvo mensageiro está pronto para as próximas crônicas!</p>",
+                    Categoria = "Sistema",
+                    CampanhaId = campanhaId,
+                    ImagemUrl = "/img/default.png" // Imagem padrão para o teste
+                };
+
+                // 3. Executa a lógica de envio (reutilizando sua lógica)
+                await EnviarNoticiaDiscord(noticiaTeste);
+
+                Console.WriteLine("[Webhook Test] Mensagem de teste enviada com sucesso.");
+
+                return Json(new { success = true, message = "Corvo enviado! Verifique o canal do Discord." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Webhook Test Error] {ex.Message}");
+                return Json(new { success = false, message = $"Falha no ritual: {ex.Message}" });
             }
         }
     }
