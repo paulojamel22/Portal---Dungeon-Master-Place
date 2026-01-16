@@ -8,7 +8,7 @@
     Layout = "_LayoutAdmin";
     bool isAdmin = CurrentUser.IsAtLeastAdmin;
     // Tenta recuperar o nome do mundo enviado pelo módulo
-    if (!Cache.TryGetValue("Foundry_NomeMundo", out string mundoAtivo))
+    if (!Cache.TryGetValue("Foundry_NomeMundo", out string? mundoAtivo))
     {
         mundoAtivo = "Aguardando Sinal...";
     }
