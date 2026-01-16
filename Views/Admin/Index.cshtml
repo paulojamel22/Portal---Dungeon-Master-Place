@@ -1,10 +1,17 @@
+@using Microsoft.Extensions.Caching.Memory
 @using PortalDMPlace.Enumerators
 @model IEnumerable<PortalDMPlace.Models.Noticia>
 @inject PortalDMPlace.Functions.AccountObject CurrentUser
+@inject Microsoft.Extensions.Caching.Memory.IMemoryCache Cache
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "_LayoutAdmin";
     bool isAdmin = CurrentUser.IsAtLeastAdmin;
+    // Tenta recuperar o nome do mundo enviado pelo módulo
+    if (!Cache.TryGetValue("Foundry_NomeMundo", out string mundoAtivo))
+    {
+        mundoAtivo = "Aguardando Sinal...";
+    }
 }
 
 <div class="container-fluid py-2">
@@ -76,6 +83,10 @@
                         <div>
                             <p class="stat-label mb-1">FOUNDRY VTT</p>
                             <h2 class="stat-value mb-0">Ativo</h2>
+                            @* Aqui exibimos o nome capturado pelo JSON *@
+                            <h2 class="stat-value mb-0 text-truncate" style="max-width: 250px;">
+                                @mundoAtivo
+                            </h2>
                             <div class="d-flex align-items-center mt-2">
                                 <span class="pulse-dot me-2"></span>
                                 <span class="small text-success fw-bold">Online no Ubuntu</span>

@@ -58,7 +58,7 @@ namespace PortalDMPlace.Controllers
 
         [HttpPost("Criar")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Criar(Noticia noticia, IFormFile? ImagemFile, bool enviarDiscord = false)
+        public async Task<IActionResult> Criar(Noticia noticia, IFormFile? ImagemFile, bool enviarDiscord = true)
         {
             ModelState.Remove("Conteudo");
             ModelState.Remove("Campanha");
@@ -269,7 +269,7 @@ namespace PortalDMPlace.Controllers
                         {
                             title = noticia.Titulo,
                             // ATENÇÃO: Link atualizado para o novo padrão /C/{slug}
-                            description = conteudoLimpo + $"\n\n[Leia a crônica completa aqui](https://portal.dmplace.com.br/C/{campanha.NomeSimples}/Detalhes/{noticia.Id})",
+                            description = conteudoLimpo + $"\n\n[Leia a crônica completa aqui](https://portal.dmplace.com.br/C/{campanha.NomeSimples}/{noticia.Id})",
                             color = settings.TemaCorPrimaria != null ? int.Parse(settings.TemaCorPrimaria.Replace("#", ""), System.Globalization.NumberStyles.HexNumber) : 16766720,
                             image = new { url = urlImagemFinal },
                             footer = new { text = $"🏷️ {noticia.Categoria} • {DateTime.Now:dd/MM HH:mm}" }

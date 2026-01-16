@@ -28,10 +28,22 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFoundry",
+        policy =>
+        {
+            policy.WithOrigins("https://rpg.dmplace.com.br") // O endereço do seu Foundry
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 // 4. Serviços Essenciais
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<HelpersFunctions>();
 builder.Services.AddScoped<AccountObject>();
@@ -88,6 +100,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession(); // Sessão deve vir antes da Autenticação/Autorização
+
+app.UseCors("AllowFoundry"); // Adicione esta linha aqui
 
 app.UseAuthentication(); // Habilita o reconhecimento de quem está logado
 app.UseAuthorization();
